@@ -1,19 +1,340 @@
+import { useMemo } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Flame } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
+import { ChecklistItem } from '@/components/dashboard/ChecklistItem'
 import { useAuth } from '@/hooks/useAuth'
+import { getGreeting, getLocalDateString } from '@/lib/date'
+import { isHabitDueOnDate } from '@/lib/habits'
+import {
+  calculateRoutineStreak,
+  getFullyCompletedRoutineDates,
+} from '@/lib/streaks'
+import {
+  completeHabit,
+  fetchHabitCompletionsForDate,
+  fetchHabitFrequencyDays,
+  fetchHabits,
+  uncompleteHabit,
+} from '@/lib/queries/habits'
+import {
+  completeRoutineStep,
+  fetchAllCompletions,
+  fetchCompletionsForDate,
+  fetchOrCreateActiveRoutine,
+  fetchRoutineSteps,
+  uncompleteRoutineStep,
+} from '@/lib/queries/routines'
+import { fetchTasks, setTaskCompleted } from '@/lib/queries/tasks'
+import type { Habit, RoutineStep, Task } from '@/types/database'
+
+const EMPTY_STEPS: RoutineStep[] = []
+const EMPTY_HABITS: Habit[] = []
+const EMPTY_TASKS: Task[] = []
 
 export function DashboardPage() {
   const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const today = getLocalDateString()
+
+  const routineQuery = useQuery({
+    queryKey: ['routine', user?.id],
+    queryFn: () => fetchOrCreateActiveRoutine(user!.id),
+    enabled: !!user,
+  })
+  const routine = routineQuery.data
+
+  const stepsQuery = useQuery({
+    queryKey: ['routineSteps', routine?.id],
+    queryFn: () => fetchRoutineSteps(routine!.id),
+    enabled: !!routine,
+  })
+  const steps = stepsQuery.data ?? EMPTY_STEPS
+
+  const routineCompletionsTodayQuery = useQuery({
+    queryKey: ['routineCompletions', user?.id, today],
+    queryFn: () => fetchCompletionsForDate(user!.id, today),
+    enabled: !!user,
+  })
+  const completedStepIds = useMemo(
+    () =>
+      new Set(
+        (routineCompletionsTodayQuery.data ?? []).map((c) => c.routine_step_id),
+      ),
+    [routineCompletionsTodayQuery.data],
+  )
+
+  const allRoutineCompletionsQuery = useQuery({
+    queryKey: ['allRoutineCompletions', user?.id],
+    queryFn: () => fetchAllCompletions(user!.id),
+    enabled: !!user,
+  })
+
+  const routineStreak = useMemo(() => {
+    const fullyCompletedDates = getFullyCompletedRoutineDates(
+      allRoutineCompletionsQuery.data ?? [],
+      steps.length,
+    )
+    return calculateRoutineStreak(fullyCompletedDates, today)
+  }, [allRoutineCompletionsQuery.data, steps.length, today])
+
+  const habitsQuery = useQuery({
+    queryKey: ['habits', user?.id],
+    queryFn: () => fetchHabits(user!.id),
+    enabled: !!user,
+  })
+  const habits = habitsQuery.data ?? EMPTY_HABITS
+  const habitIds = useMemo(() => habits.map((h) => h.id), [habits])
+
+  const frequencyDaysQuery = useQuery({
+    queryKey: ['habitFrequencyDays', habitIds],
+    queryFn: () => fetchHabitFrequencyDays(habitIds),
+    enabled: habitIds.length > 0,
+  })
+  const weekdaysByHabit = useMemo(() => {
+    const map = new Map<string, number[]>()
+    for (const row of frequencyDaysQuery.data ?? []) {
+      const list = map.get(row.habit_id) ?? []
+      list.push(row.weekday)
+      map.set(row.habit_id, list)
+    }
+    return map
+  }, [frequencyDaysQuery.data])
+
+  const dueHabitsToday = useMemo(
+    () =>
+      habits.filter((h) =>
+        isHabitDueOnDate(h, weekdaysByHabit.get(h.id) ?? []),
+      ),
+    [habits, weekdaysByHabit],
+  )
+
+  const habitCompletionsTodayQuery = useQuery({
+    queryKey: ['habitCompletions', user?.id, today],
+    queryFn: () => fetchHabitCompletionsForDate(user!.id, today),
+    enabled: !!user,
+  })
+  const completedHabitIds = useMemo(
+    () =>
+      new Set((habitCompletionsTodayQuery.data ?? []).map((c) => c.habit_id)),
+    [habitCompletionsTodayQuery.data],
+  )
+
+  const tasksQuery = useQuery({
+    queryKey: ['tasks', user?.id],
+    queryFn: () => fetchTasks(user!.id),
+    enabled: !!user,
+  })
+  const tasks = tasksQuery.data ?? EMPTY_TASKS
+  const todayTasks = useMemo(
+    () => tasks.filter((t) => t.due_date === today),
+    [tasks, today],
+  )
+  const lateTasks = useMemo(
+    () =>
+      tasks.filter((t) => t.due_date && t.due_date < today && !t.is_completed),
+    [tasks, today],
+  )
+
+  const toggleStepMutation = useMutation({
+    mutationFn: (step: RoutineStep) =>
+      completedStepIds.has(step.id)
+        ? uncompleteRoutineStep(step.id, today)
+        : completeRoutineStep(user!.id, step.id, today),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['routineCompletions', user?.id, today],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['allRoutineCompletions', user?.id],
+      })
+    },
+  })
+
+  const toggleHabitMutation = useMutation({
+    mutationFn: (habit: Habit) =>
+      completedHabitIds.has(habit.id)
+        ? uncompleteHabit(habit.id, today)
+        : completeHabit(user!.id, habit.id, today),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['habitCompletions', user?.id, today],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['allHabitCompletions', user?.id],
+      })
+    },
+  })
+
+  const toggleTaskMutation = useMutation({
+    mutationFn: (task: Task) => setTaskCompleted(task.id, !task.is_completed),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', user?.id] })
+    },
+  })
+
+  const completedHabitsDueToday = dueHabitsToday.filter((h) =>
+    completedHabitIds.has(h.id),
+  ).length
+  const completedTasksToday = todayTasks.filter((t) => t.is_completed).length
+
+  const totalDue = steps.length + dueHabitsToday.length + todayTasks.length
+  const totalCompleted =
+    completedStepIds.size + completedHabitsDueToday + completedTasksToday
+  const progressPercent =
+    totalDue > 0 ? Math.round((totalCompleted / totalDue) * 100) : 0
+
+  const isLoading =
+    routineQuery.isLoading ||
+    stepsQuery.isLoading ||
+    habitsQuery.isLoading ||
+    tasksQuery.isLoading
+  const isError =
+    routineQuery.isError ||
+    stepsQuery.isError ||
+    habitsQuery.isError ||
+    tasksQuery.isError
+
+  const firstName = user?.email?.split('@')[0] ?? ''
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-xl font-semibold">Bem-vindo, {user?.email}</h1>
-      <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-        Seu painel "Meu dia" completo chega nas próximas fases — por enquanto,
-        organize suas tarefas avulsas.
-      </p>
-      <Card className="mt-6 p-8 text-center text-sm text-[var(--color-text-muted)]">
-        Em breve: rotina matinal, hábitos e sequência de dias, tudo aqui.
-      </Card>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-2xl font-semibold">
+            {getGreeting()}, {firstName}
+          </h1>
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+            {isLoading
+              ? 'Carregando seu dia…'
+              : totalDue > 0
+                ? `${totalCompleted} de ${totalDue} concluídos hoje`
+                : 'Nada programado para hoje ainda'}
+          </p>
+        </div>
+        {routineStreak.currentStreak > 0 && (
+          <div className="from-primary-500 to-accent-500 flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r px-3 py-1.5 text-sm font-semibold whitespace-nowrap text-white">
+            <Flame size={16} />
+            {routineStreak.currentStreak}{' '}
+            {routineStreak.currentStreak === 1 ? 'dia' : 'dias'}
+          </div>
+        )}
+      </div>
+
+      {totalDue > 0 && (
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-[var(--color-border)]">
+          <div
+            className="from-primary-500 to-accent-500 h-full rounded-full bg-gradient-to-r transition-all"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+      )}
+
+      {isLoading && (
+        <p className="mt-8 text-sm text-[var(--color-text-muted)]">
+          Carregando…
+        </p>
+      )}
+      {isError && (
+        <p className="text-error-500 mt-8 text-sm">
+          Não foi possível carregar seu dia. Tente novamente.
+        </p>
+      )}
+
+      {!isLoading && !isError && (
+        <div className="mt-8 flex flex-col gap-8">
+          {lateTasks.length > 0 && (
+            <section>
+              <h2 className="text-error-500 text-sm font-semibold">
+                Atrasadas
+              </h2>
+              <div className="mt-2 flex flex-col gap-2">
+                {lateTasks.map((task) => (
+                  <ChecklistItem
+                    key={task.id}
+                    title={task.title}
+                    subtitle="Tarefa atrasada"
+                    completed={task.is_completed}
+                    onToggle={() => toggleTaskMutation.mutate(task)}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          <section>
+            <h2 className="text-sm font-semibold text-[var(--color-text)]">
+              Rotina matinal
+            </h2>
+            {steps.length === 0 ? (
+              <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+                Sua rotina ainda não tem etapas. Adicione em "Rotina".
+              </p>
+            ) : (
+              <div className="mt-2 flex flex-col gap-2">
+                {steps.map((step) => (
+                  <ChecklistItem
+                    key={step.id}
+                    title={step.title}
+                    completed={completedStepIds.has(step.id)}
+                    onToggle={() => toggleStepMutation.mutate(step)}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section>
+            <h2 className="text-sm font-semibold text-[var(--color-text)]">
+              Hábitos de hoje
+            </h2>
+            {dueHabitsToday.length === 0 ? (
+              <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+                Nenhum hábito programado para hoje.
+              </p>
+            ) : (
+              <div className="mt-2 flex flex-col gap-2">
+                {dueHabitsToday.map((habit) => (
+                  <ChecklistItem
+                    key={habit.id}
+                    title={habit.name}
+                    completed={completedHabitIds.has(habit.id)}
+                    onToggle={() => toggleHabitMutation.mutate(habit)}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section>
+            <h2 className="text-sm font-semibold text-[var(--color-text)]">
+              Tarefas de hoje
+            </h2>
+            {todayTasks.length === 0 ? (
+              <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+                Nenhuma tarefa para hoje.
+              </p>
+            ) : (
+              <div className="mt-2 flex flex-col gap-2">
+                {todayTasks.map((task) => (
+                  <ChecklistItem
+                    key={task.id}
+                    title={task.title}
+                    completed={task.is_completed}
+                    onToggle={() => toggleTaskMutation.mutate(task)}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          {totalDue > 0 && totalCompleted === totalDue && (
+            <Card className="text-primary-600 p-6 text-center text-sm font-medium">
+              Tudo pronto por hoje. Bom trabalho!
+            </Card>
+          )}
+        </div>
+      )}
     </div>
   )
 }

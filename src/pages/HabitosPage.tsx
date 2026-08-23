@@ -9,11 +9,13 @@ import { HabitItem } from '@/components/habits/HabitItem'
 import { useAuth } from '@/hooks/useAuth'
 import { getLocalDateString } from '@/lib/date'
 import { isHabitDueOnDate } from '@/lib/habits'
+import { calculateHabitStreak } from '@/lib/streaks'
 import { fetchCategories } from '@/lib/queries/categories'
 import {
   archiveHabit,
   completeHabit,
   createHabit,
+  fetchAllHabitCompletions,
   fetchHabitCompletionsForDate,
   fetchHabitFrequencyDays,
   fetchHabits,
@@ -67,6 +69,21 @@ export function HabitosPage() {
     [completionsQuery.data],
   )
 
+  const allCompletionsQuery = useQuery({
+    queryKey: ['allHabitCompletions', user?.id],
+    queryFn: () => fetchAllHabitCompletions(user!.id),
+    enabled: !!user,
+  })
+  const completionDatesByHabit = useMemo(() => {
+    const map = new Map<string, string[]>()
+    for (const completion of allCompletionsQuery.data ?? []) {
+      const list = map.get(completion.habit_id) ?? []
+      list.push(completion.completion_date)
+      map.set(completion.habit_id, list)
+    }
+    return map
+  }, [allCompletionsQuery.data])
+
   const categoriesQuery = useQuery({
     queryKey: ['categories'],
     queryFn: fetchCategories,
@@ -84,10 +101,14 @@ export function HabitosPage() {
     queryClient.invalidateQueries({
       queryKey: ['habitFrequencyDays', habitIds],
     })
-  const invalidateCompletions = () =>
+  const invalidateCompletions = () => {
     queryClient.invalidateQueries({
       queryKey: ['habitCompletions', user?.id, today],
     })
+    queryClient.invalidateQueries({
+      queryKey: ['allHabitCompletions', user?.id],
+    })
+  }
 
   const createMutation = useMutation({
     mutationFn: (values: HabitFormValues) =>
@@ -188,6 +209,12 @@ export function HabitosPage() {
         {habits.map((habit) => {
           const weekdays = weekdaysByHabit.get(habit.id) ?? []
           const dueToday = isHabitDueOnDate(habit, weekdays)
+          const streak = calculateHabitStreak(
+            completionDatesByHabit.get(habit.id) ?? [],
+            habit.frequency_type,
+            weekdays,
+            today,
+          )
           return (
             <HabitItem
               key={habit.id}
@@ -200,6 +227,7 @@ export function HabitosPage() {
               weekdays={weekdays}
               dueToday={dueToday}
               completedToday={completedHabitIds.has(habit.id)}
+              streak={streak}
               onToggleComplete={(h) => toggleMutation.mutate(h)}
               onEdit={openEditModal}
               onArchive={handleArchive}

@@ -105,6 +105,18 @@ export async function reorderRoutineSteps(
   if (firstError) throw firstError
 }
 
+export async function fetchAllCompletions(
+  userId: string,
+): Promise<RoutineStepCompletion[]> {
+  const client = requireSupabase()
+  const { data, error } = await client
+    .from('routine_step_completions')
+    .select('*')
+    .eq('user_id', userId)
+  if (error) throw error
+  return data
+}
+
 export async function fetchCompletionsForDate(
   userId: string,
   date: string,

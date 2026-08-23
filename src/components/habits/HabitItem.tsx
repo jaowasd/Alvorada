@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { Flame, MoreVertical, Pencil, Trash2 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { cn } from '@/lib/cn'
+import type { StreakStats } from '@/lib/streaks'
 import { WEEKDAY_LABELS } from '@/lib/validation/habit'
 import type { Category, Habit } from '@/types/database'
 
@@ -11,6 +12,7 @@ interface HabitItemProps {
   weekdays: number[]
   dueToday: boolean
   completedToday: boolean
+  streak: StreakStats
   onToggleComplete: (habit: Habit) => void
   onEdit: (habit: Habit) => void
   onArchive: (habit: Habit) => void
@@ -22,6 +24,7 @@ export function HabitItem({
   weekdays,
   dueToday,
   completedToday,
+  streak,
   onToggleComplete,
   onEdit,
   onArchive,
@@ -72,6 +75,13 @@ export function HabitItem({
             <span>{habit.estimated_duration_minutes} min</span>
           )}
           {!dueToday && <span>Não é hoje</span>}
+          {streak.currentStreak > 0 && (
+            <span className="text-primary-600 flex items-center gap-1 font-medium">
+              <Flame size={12} /> {streak.currentStreak}{' '}
+              {streak.currentStreak === 1 ? 'dia' : 'dias'}
+            </span>
+          )}
+          {streak.bestStreak > 0 && <span>Recorde: {streak.bestStreak}</span>}
         </div>
         {habit.notes && (
           <p className="mt-1 text-xs text-[var(--color-text-muted)]">

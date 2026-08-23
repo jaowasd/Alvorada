@@ -105,6 +105,18 @@ export async function archiveHabit(id: string): Promise<void> {
   if (error) throw error
 }
 
+export async function fetchAllHabitCompletions(
+  userId: string,
+): Promise<HabitCompletion[]> {
+  const client = requireSupabase()
+  const { data, error } = await client
+    .from('habit_completions')
+    .select('*')
+    .eq('user_id', userId)
+  if (error) throw error
+  return data
+}
+
 export async function fetchHabitCompletionsForDate(
   userId: string,
   date: string,
