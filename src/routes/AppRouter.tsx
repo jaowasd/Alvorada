@@ -33,6 +33,16 @@ const HabitosPage = lazy(() =>
 const TarefasPage = lazy(() =>
   import('@/pages/TarefasPage').then((m) => ({ default: m.TarefasPage })),
 )
+const TransacoesPage = lazy(() =>
+  import('@/pages/financas/TransacoesPage').then((m) => ({
+    default: m.TransacoesPage,
+  })),
+)
+const ContasPage = lazy(() =>
+  import('@/pages/financas/ContasPage').then((m) => ({
+    default: m.ContasPage,
+  })),
+)
 const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 )
@@ -83,6 +93,8 @@ export function AppRouter() {
             <Route path="rotina" element={<RotinaPage />} />
             <Route path="habitos" element={<HabitosPage />} />
             <Route path="tarefas" element={<TarefasPage />} />
+            <Route path="financas/transacoes" element={<TransacoesPage />} />
+            <Route path="financas/contas" element={<ContasPage />} />
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
