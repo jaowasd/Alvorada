@@ -17,6 +17,9 @@ dist-ssr
 .env.*
 !.env.example
 
+# Third-party tool workspace (not created by this project)
+.mimocode
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -5,6 +5,27 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Alvorada — Rotina matinal e hábitos saudáveis</title>
+    <meta
+      name="description"
+      content="Organize sua rotina matinal, crie hábitos saudáveis e mantenha a consistência com sequências de dias. Comece bem, continue bem."
+    />
+    <meta
+      property="og:title"
+      content="Alvorada — Rotina matinal e hábitos saudáveis"
+    />
+    <meta
+      property="og:description"
+      content="Organize sua rotina matinal, crie hábitos saudáveis e mantenha a consistência com sequências de dias."
+    />
+    <meta property="og:type" content="website" />
+    <script>
+      try {
+        var storedTheme = localStorage.getItem('alvorada-theme')
+        if (storedTheme === 'light' || storedTheme === 'dark') {
+          document.documentElement.setAttribute('data-theme', storedTheme)
+        }
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
