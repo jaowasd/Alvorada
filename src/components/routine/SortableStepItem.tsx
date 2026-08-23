@@ -1,43 +1,61 @@
 import { useState } from 'react'
-import { MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { GripVertical, MoreVertical, Pencil, Trash2 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { cn } from '@/lib/cn'
-import { getLocalDateString } from '@/lib/date'
-import type { Category, Task } from '@/types/database'
+import type { Category, RoutineStep } from '@/types/database'
 
-interface TaskItemProps {
-  task: Task
+interface SortableStepItemProps {
+  step: RoutineStep
   category?: Category
-  onToggleComplete: (task: Task) => void
-  onEdit: (task: Task) => void
-  onDelete: (task: Task) => void
+  completed: boolean
+  onToggleComplete: (step: RoutineStep) => void
+  onEdit: (step: RoutineStep) => void
+  onDelete: (step: RoutineStep) => void
 }
 
-function isLate(task: Task): boolean {
-  if (task.is_completed || !task.due_date) return false
-  return task.due_date < getLocalDateString()
-}
-
-export function TaskItem({
-  task,
+export function SortableStepItem({
+  step,
   category,
+  completed,
   onToggleComplete,
   onEdit,
   onDelete,
-}: TaskItemProps) {
+}: SortableStepItemProps) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const late = isLate(task)
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: step.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
 
   return (
-    <Card className="flex items-start gap-3 p-4">
+    <Card ref={setNodeRef} style={style} className="flex items-start gap-3 p-4">
+      <button
+        type="button"
+        aria-label="Arrastar para reordenar"
+        className="mt-1 cursor-grab touch-none text-[var(--color-text-muted)]"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical size={16} />
+      </button>
       <input
         type="checkbox"
-        checked={task.is_completed}
-        onChange={() => onToggleComplete(task)}
+        checked={completed}
+        onChange={() => onToggleComplete(step)}
         aria-label={
-          task.is_completed
-            ? 'Marcar como não concluída'
-            : 'Marcar como concluída'
+          completed ? 'Marcar como não concluída' : 'Marcar como concluída'
         }
         className="accent-primary-500 mt-1 h-4 w-4"
       />
@@ -45,10 +63,10 @@ export function TaskItem({
         <p
           className={cn(
             'text-sm font-medium text-[var(--color-text)]',
-            task.is_completed && 'text-[var(--color-text-muted)] line-through',
+            completed && 'text-[var(--color-text-muted)] line-through',
           )}
         >
-          {task.title}
+          {step.title}
         </p>
         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted)]">
           {category && (
@@ -62,21 +80,13 @@ export function TaskItem({
               {category.name}
             </span>
           )}
-          {task.due_date && (
-            <span className={cn(late && 'text-error-500 font-medium')}>
-              {late ? 'Atrasada · ' : ''}
-              {new Date(`${task.due_date}T00:00:00`).toLocaleDateString(
-                'pt-BR',
-              )}
-            </span>
-          )}
-          {task.estimated_duration_minutes && (
-            <span>{task.estimated_duration_minutes} min</span>
+          {step.estimated_duration_minutes && (
+            <span>{step.estimated_duration_minutes} min</span>
           )}
         </div>
-        {task.notes && (
+        {step.notes && (
           <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-            {task.notes}
+            {step.notes}
           </p>
         )}
       </div>
@@ -95,7 +105,7 @@ export function TaskItem({
               type="button"
               onClick={() => {
                 setMenuOpen(false)
-                onEdit(task)
+                onEdit(step)
               }}
               className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-border)]/30"
             >
@@ -105,7 +115,7 @@ export function TaskItem({
               type="button"
               onClick={() => {
                 setMenuOpen(false)
-                onDelete(task)
+                onDelete(step)
               }}
               className="text-error-500 flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-border)]/30"
             >

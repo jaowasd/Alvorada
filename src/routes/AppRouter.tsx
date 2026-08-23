@@ -7,6 +7,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { RecuperarSenhaPage } from '@/pages/RecuperarSenhaPage'
 import { RedefinirSenhaPage } from '@/pages/RedefinirSenhaPage'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { RotinaPage } from '@/pages/RotinaPage'
 import { TarefasPage } from '@/pages/TarefasPage'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 import { PublicOnlyRoute } from '@/routes/PublicOnlyRoute'
@@ -45,6 +46,7 @@ export function AppRouter() {
           }
         >
           <Route index element={<DashboardPage />} />
+          <Route path="rotina" element={<RotinaPage />} />
           <Route path="tarefas" element={<TarefasPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
