@@ -28,6 +28,7 @@ const financeSubItems = [
   { to: '/app/financas/transacoes', label: 'Transações', end: false },
   { to: '/app/financas/contas', label: 'Contas', end: false },
   { to: '/app/financas/contas-da-casa', label: 'Contas da casa', end: false },
+  { to: '/app/financas/configuracoes', label: 'Configurações', end: false },
 ]
 
 function SidebarLink({

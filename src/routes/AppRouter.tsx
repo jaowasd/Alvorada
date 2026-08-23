@@ -58,6 +58,11 @@ const ContasDaCasaPage = lazy(() =>
     default: m.ContasDaCasaPage,
   })),
 )
+const ConfiguracoesPage = lazy(() =>
+  import('@/pages/financas/ConfiguracoesPage').then((m) => ({
+    default: m.ConfiguracoesPage,
+  })),
+)
 const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 )
@@ -113,6 +118,7 @@ export function AppRouter() {
               <Route path="transacoes" element={<TransacoesPage />} />
               <Route path="contas" element={<ContasPage />} />
               <Route path="contas-da-casa" element={<ContasDaCasaPage />} />
+              <Route path="configuracoes" element={<ConfiguracoesPage />} />
             </Route>
           </Route>
           <Route path="*" element={<NotFoundPage />} />

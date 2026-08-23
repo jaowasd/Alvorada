@@ -1,0 +1,68 @@
+import {
+  Banknote,
+  BookOpen,
+  Briefcase,
+  Car,
+  Circle,
+  CreditCard,
+  Dumbbell,
+  Gamepad2,
+  Gift,
+  GraduationCap,
+  HeartPulse,
+  Home,
+  PiggyBank,
+  Plane,
+  RefreshCw,
+  ShoppingCart,
+  TrendingUp,
+  Utensils,
+  Wallet,
+  Zap,
+  type LucideIcon,
+} from 'lucide-react'
+
+export const FINANCE_CATEGORY_ICONS: { name: string; icon: LucideIcon }[] = [
+  { name: 'Wallet', icon: Wallet },
+  { name: 'Briefcase', icon: Briefcase },
+  { name: 'TrendingUp', icon: TrendingUp },
+  { name: 'PiggyBank', icon: PiggyBank },
+  { name: 'Home', icon: Home },
+  { name: 'Zap', icon: Zap },
+  { name: 'Utensils', icon: Utensils },
+  { name: 'Car', icon: Car },
+  { name: 'HeartPulse', icon: HeartPulse },
+  { name: 'BookOpen', icon: BookOpen },
+  { name: 'GraduationCap', icon: GraduationCap },
+  { name: 'Gamepad2', icon: Gamepad2 },
+  { name: 'RefreshCw', icon: RefreshCw },
+  { name: 'CreditCard', icon: CreditCard },
+  { name: 'ShoppingCart', icon: ShoppingCart },
+  { name: 'Plane', icon: Plane },
+  { name: 'Gift', icon: Gift },
+  { name: 'Dumbbell', icon: Dumbbell },
+  { name: 'Banknote', icon: Banknote },
+  { name: 'Circle', icon: Circle },
+]
+
+export const FINANCE_CATEGORY_COLORS = [
+  '#16a34a',
+  '#0d9488',
+  '#0284c7',
+  '#65a30d',
+  '#7c3aed',
+  '#f59e0b',
+  '#f97316',
+  '#0ea5e9',
+  '#dc2626',
+  '#4f46e5',
+  '#ec4899',
+  '#06b6d4',
+  '#334155',
+  '#78716c',
+]
+
+export const FINANCE_CATEGORY_ICON_MAP: Record<string, LucideIcon> =
+  Object.fromEntries(
+    FINANCE_CATEGORY_ICONS.map(({ name, icon }) => [name, icon]),
+  )
