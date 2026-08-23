@@ -1,13 +1,25 @@
 import { useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, CheckCircle2, Flame, Trophy } from 'lucide-react'
-import { Card } from '@/components/ui/Card'
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronRight,
+  Flame,
+  Trophy,
+  Wallet,
+} from 'lucide-react'
+import { MotionCard } from '@/components/ui/Card'
+import { PageFade } from '@/components/ui/PageFade'
 import { ProgressRing } from '@/components/ui/ProgressRing'
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber'
 import { ChecklistItem } from '@/components/dashboard/ChecklistItem'
 import { StatTile } from '@/components/dashboard/StatTile'
+import { StatsBar } from '@/components/dashboard/StatsBar'
 import { useAuth } from '@/hooks/useAuth'
 import { getGreeting, getLocalDateString } from '@/lib/date'
 import { isHabitDueOnDate } from '@/lib/habits'
+import { staggerContainer } from '@/lib/motion'
 import {
   calculateRoutineStreak,
   getFullyCompletedRoutineDates,
@@ -200,7 +212,7 @@ export function DashboardPage() {
   const firstName = user?.email?.split('@')[0] ?? ''
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <PageFade className="mx-auto max-w-4xl">
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div>
           <h1 className="font-heading text-3xl font-bold text-[var(--color-text)]">
@@ -219,34 +231,50 @@ export function DashboardPage() {
         </div>
         {totalDue > 0 && (
           <ProgressRing percent={progressPercent} size={88} strokeWidth={8}>
-            <span className="text-lg font-bold">{progressPercent}%</span>
+            <span className="text-lg font-bold tabular-nums">
+              <AnimatedNumber value={progressPercent} suffix="%" />
+            </span>
           </ProgressRing>
         )}
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatTile
-          label="Sequência atual"
-          value={`${routineStreak.currentStreak}`}
-          icon={Flame}
-        />
-        <StatTile
-          label="Recorde"
-          value={`${routineStreak.bestStreak}`}
-          icon={Trophy}
-        />
-        <StatTile
-          label="Concluído hoje"
-          value={`${progressPercent}%`}
-          icon={CheckCircle2}
-        />
-        <StatTile
-          label="Atrasadas"
-          value={`${lateTasks.length}`}
-          icon={AlertTriangle}
-          tone={lateTasks.length > 0 ? 'error' : 'default'}
-        />
+      <div className="mt-6">
+        <StatsBar>
+          <StatTile
+            label="Sequência atual"
+            value={routineStreak.currentStreak}
+            icon={Flame}
+          />
+          <StatTile
+            label="Recorde"
+            value={routineStreak.bestStreak}
+            icon={Trophy}
+          />
+          <StatTile
+            label="Concluído hoje"
+            value={progressPercent}
+            suffix="%"
+            icon={CheckCircle2}
+          />
+          <StatTile
+            label="Atrasadas"
+            value={lateTasks.length}
+            icon={AlertTriangle}
+            tone={lateTasks.length > 0 ? 'error' : 'default'}
+          />
+        </StatsBar>
       </div>
+
+      <Link
+        to="/app/financas"
+        className="mt-4 flex items-center justify-between rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-bg)]"
+      >
+        <span className="flex items-center gap-2">
+          <Wallet size={16} className="text-primary-600" />
+          Ver Finanças
+        </span>
+        <ChevronRight size={16} className="text-[var(--color-text-muted)]" />
+      </Link>
 
       {isLoading && (
         <p className="mt-8 text-sm text-[var(--color-text-muted)]">
@@ -266,17 +294,22 @@ export function DashboardPage() {
               <h2 className="text-error-500 mb-2 text-sm font-semibold">
                 Atrasadas
               </h2>
-              <Card className="divide-y divide-[var(--color-border)] overflow-hidden py-0">
+              <MotionCard
+                variants={staggerContainer}
+                initial="hidden"
+                animate="show"
+                className="divide-y divide-[var(--color-border)] overflow-hidden py-0"
+              >
                 {lateTasks.map((task) => (
                   <ChecklistItem
                     key={task.id}
                     title={task.title}
-                    subtitle="Tarefa atrasada"
                     completed={task.is_completed}
+                    late
                     onToggle={() => toggleTaskMutation.mutate(task)}
                   />
                 ))}
-              </Card>
+              </MotionCard>
             </section>
           )}
 
@@ -289,7 +322,12 @@ export function DashboardPage() {
                 Sua rotina ainda não tem etapas. Adicione em "Rotina".
               </p>
             ) : (
-              <Card className="divide-y divide-[var(--color-border)] overflow-hidden py-0">
+              <MotionCard
+                variants={staggerContainer}
+                initial="hidden"
+                animate="show"
+                className="divide-y divide-[var(--color-border)] overflow-hidden py-0"
+              >
                 {steps.map((step) => (
                   <ChecklistItem
                     key={step.id}
@@ -298,7 +336,7 @@ export function DashboardPage() {
                     onToggle={() => toggleStepMutation.mutate(step)}
                   />
                 ))}
-              </Card>
+              </MotionCard>
             )}
           </section>
 
@@ -311,7 +349,12 @@ export function DashboardPage() {
                 Nenhum hábito programado para hoje.
               </p>
             ) : (
-              <Card className="divide-y divide-[var(--color-border)] overflow-hidden py-0">
+              <MotionCard
+                variants={staggerContainer}
+                initial="hidden"
+                animate="show"
+                className="divide-y divide-[var(--color-border)] overflow-hidden py-0"
+              >
                 {dueHabitsToday.map((habit) => (
                   <ChecklistItem
                     key={habit.id}
@@ -320,7 +363,7 @@ export function DashboardPage() {
                     onToggle={() => toggleHabitMutation.mutate(habit)}
                   />
                 ))}
-              </Card>
+              </MotionCard>
             )}
           </section>
 
@@ -333,7 +376,12 @@ export function DashboardPage() {
                 Nenhuma tarefa para hoje.
               </p>
             ) : (
-              <Card className="divide-y divide-[var(--color-border)] overflow-hidden py-0">
+              <MotionCard
+                variants={staggerContainer}
+                initial="hidden"
+                animate="show"
+                className="divide-y divide-[var(--color-border)] overflow-hidden py-0"
+              >
                 {todayTasks.map((task) => (
                   <ChecklistItem
                     key={task.id}
@@ -342,17 +390,21 @@ export function DashboardPage() {
                     onToggle={() => toggleTaskMutation.mutate(task)}
                   />
                 ))}
-              </Card>
+              </MotionCard>
             )}
           </section>
 
           {totalDue > 0 && totalCompleted === totalDue && (
-            <Card className="text-primary-600 p-6 text-center text-sm font-medium">
+            <MotionCard
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-primary-600 p-6 text-center text-sm font-medium"
+            >
               Tudo pronto por hoje. Bom trabalho!
-            </Card>
+            </MotionCard>
           )}
         </div>
       )}
-    </div>
+    </PageFade>
   )
 }

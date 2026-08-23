@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence } from 'framer-motion'
 import { Plus } from 'lucide-react'
@@ -20,7 +20,6 @@ import {
   archiveRecurringTransaction,
   createRecurringTransaction,
   fetchRecurringTransactions,
-  generateMissingRecurringInstances,
   setRecurringTransactionActive,
   updateRecurringTransaction,
 } from '@/lib/queries/financas/recurring'
@@ -46,31 +45,18 @@ export function ContasDaCasaPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingRecurring, setEditingRecurring] =
     useState<FinanceRecurringTransaction | null>(null)
-  const [generated, setGenerated] = useState(false)
 
-  // Gera as instâncias faltantes sob demanda, ao abrir a página — não há cron.
-  useEffect(() => {
-    if (!user) return
-    let cancelled = false
-    generateMissingRecurringInstances(user.id)
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setGenerated(true)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [user])
-
+  // A geração das instâncias faltantes acontece uma vez em FinancasLayout,
+  // ao entrar na seção — aqui só consumimos os dados já atualizados.
   const recurringQuery = useQuery({
     queryKey: ['financeRecurring', user?.id],
     queryFn: () => fetchRecurringTransactions(user!.id),
-    enabled: !!user && generated,
+    enabled: !!user,
   })
   const transactionsQuery = useQuery({
     queryKey: ['financeTransactions', user?.id],
     queryFn: () => fetchTransactions(user!.id),
-    enabled: !!user && generated,
+    enabled: !!user,
   })
   const accountsQuery = useQuery({
     queryKey: ['financeAccounts', user?.id],
@@ -187,8 +173,7 @@ export function ContasDaCasaPage() {
     }
   }
 
-  const isLoading =
-    !generated || recurringQuery.isLoading || transactionsQuery.isLoading
+  const isLoading = recurringQuery.isLoading || transactionsQuery.isLoading
   const isError = recurringQuery.isError || transactionsQuery.isError
 
   return (

@@ -33,6 +33,16 @@ const HabitosPage = lazy(() =>
 const TarefasPage = lazy(() =>
   import('@/pages/TarefasPage').then((m) => ({ default: m.TarefasPage })),
 )
+const FinancasLayout = lazy(() =>
+  import('@/pages/financas/FinancasLayout').then((m) => ({
+    default: m.FinancasLayout,
+  })),
+)
+const FinancasDashboardPage = lazy(() =>
+  import('@/pages/financas/FinancasDashboardPage').then((m) => ({
+    default: m.FinancasDashboardPage,
+  })),
+)
 const TransacoesPage = lazy(() =>
   import('@/pages/financas/TransacoesPage').then((m) => ({
     default: m.TransacoesPage,
@@ -98,12 +108,12 @@ export function AppRouter() {
             <Route path="rotina" element={<RotinaPage />} />
             <Route path="habitos" element={<HabitosPage />} />
             <Route path="tarefas" element={<TarefasPage />} />
-            <Route path="financas/transacoes" element={<TransacoesPage />} />
-            <Route path="financas/contas" element={<ContasPage />} />
-            <Route
-              path="financas/contas-da-casa"
-              element={<ContasDaCasaPage />}
-            />
+            <Route path="financas" element={<FinancasLayout />}>
+              <Route index element={<FinancasDashboardPage />} />
+              <Route path="transacoes" element={<TransacoesPage />} />
+              <Route path="contas" element={<ContasPage />} />
+              <Route path="contas-da-casa" element={<ContasDaCasaPage />} />
+            </Route>
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
