@@ -125,13 +125,11 @@ export async function completeRoutineStep(
   date: string,
 ): Promise<void> {
   const client = requireSupabase()
-  const { error } = await client
-    .from('routine_step_completions')
-    .insert({
-      user_id: userId,
-      routine_step_id: routineStepId,
-      completion_date: date,
-    })
+  const { error } = await client.from('routine_step_completions').insert({
+    user_id: userId,
+    routine_step_id: routineStepId,
+    completion_date: date,
+  })
   if (error) throw error
 }
 

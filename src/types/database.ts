@@ -52,3 +52,32 @@ export interface RoutineStepCompletion {
   completion_date: string
   completed_at: string
 }
+
+export type HabitFrequencyType = 'daily' | 'specific_days'
+
+export interface Habit {
+  id: string
+  user_id: string
+  name: string
+  notes: string | null
+  category_id: string | null
+  estimated_duration_minutes: number | null
+  frequency_type: HabitFrequencyType
+  archived_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface HabitFrequencyDay {
+  id: string
+  habit_id: string
+  weekday: number
+}
+
+export interface HabitCompletion {
+  id: string
+  habit_id: string
+  user_id: string
+  completion_date: string
+  completed_at: string
+}

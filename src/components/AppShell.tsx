@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import { ListChecks, LogOut, Sunrise, Waypoints } from 'lucide-react'
+import {
+  HeartPulse,
+  ListChecks,
+  LogOut,
+  Sunrise,
+  Waypoints,
+} from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/cn'
@@ -8,6 +14,7 @@ import { cn } from '@/lib/cn'
 const navItems = [
   { to: '/app', label: 'Meu dia', icon: Sunrise, end: true },
   { to: '/app/rotina', label: 'Rotina', icon: Waypoints, end: false },
+  { to: '/app/habitos', label: 'Hábitos', icon: HeartPulse, end: false },
   { to: '/app/tarefas', label: 'Tarefas', icon: ListChecks, end: false },
 ]
 
