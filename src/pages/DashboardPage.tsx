@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Flame } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Flame, Trophy } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { ChecklistItem } from '@/components/dashboard/ChecklistItem'
+import { StatTile } from '@/components/dashboard/StatTile'
 import { useAuth } from '@/hooks/useAuth'
 import { getGreeting, getLocalDateString } from '@/lib/date'
 import { isHabitDueOnDate } from '@/lib/habits'
@@ -199,11 +200,14 @@ export function DashboardPage() {
   const firstName = user?.email?.split('@')[0] ?? ''
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <div className="flex items-start justify-between gap-4">
+    <div className="mx-auto max-w-4xl">
+      <div className="flex flex-wrap items-start justify-between gap-6">
         <div>
-          <h1 className="font-heading text-2xl font-semibold">
-            {getGreeting()}, {firstName}
+          <h1 className="font-heading text-3xl font-bold text-[var(--color-text)]">
+            {getGreeting()},{' '}
+            <span className="font-medium text-[var(--color-text-muted)]">
+              {firstName}
+            </span>
           </h1>
           <p className="mt-1 text-sm text-[var(--color-text-muted)]">
             {isLoading
@@ -212,19 +216,36 @@ export function DashboardPage() {
                 ? `${totalCompleted} de ${totalDue} concluídos hoje`
                 : 'Nada programado para hoje ainda'}
           </p>
-          {routineStreak.currentStreak > 0 && (
-            <div className="from-primary-500 to-accent-500 mt-3 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r px-3 py-1.5 text-sm font-semibold text-white">
-              <Flame size={16} />
-              {routineStreak.currentStreak}{' '}
-              {routineStreak.currentStreak === 1 ? 'dia' : 'dias'}
-            </div>
-          )}
         </div>
         {totalDue > 0 && (
           <ProgressRing percent={progressPercent} size={88} strokeWidth={8}>
             <span className="text-lg font-bold">{progressPercent}%</span>
           </ProgressRing>
         )}
+      </div>
+
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <StatTile
+          label="Sequência atual"
+          value={`${routineStreak.currentStreak}`}
+          icon={Flame}
+        />
+        <StatTile
+          label="Recorde"
+          value={`${routineStreak.bestStreak}`}
+          icon={Trophy}
+        />
+        <StatTile
+          label="Concluído hoje"
+          value={`${progressPercent}%`}
+          icon={CheckCircle2}
+        />
+        <StatTile
+          label="Atrasadas"
+          value={`${lateTasks.length}`}
+          icon={AlertTriangle}
+          tone={lateTasks.length > 0 ? 'error' : 'default'}
+        />
       </div>
 
       {isLoading && (
@@ -239,13 +260,13 @@ export function DashboardPage() {
       )}
 
       {!isLoading && !isError && (
-        <div className="mt-8 flex flex-col gap-8">
+        <div className="mt-8 flex flex-col gap-6">
           {lateTasks.length > 0 && (
             <section>
-              <h2 className="text-error-500 text-sm font-semibold">
+              <h2 className="text-error-500 mb-2 text-sm font-semibold">
                 Atrasadas
               </h2>
-              <div className="mt-2 flex flex-col gap-2">
+              <Card className="divide-y divide-[var(--color-border)] overflow-hidden py-0">
                 {lateTasks.map((task) => (
                   <ChecklistItem
                     key={task.id}
@@ -255,20 +276,20 @@ export function DashboardPage() {
                     onToggle={() => toggleTaskMutation.mutate(task)}
                   />
                 ))}
-              </div>
+              </Card>
             </section>
           )}
 
           <section>
-            <h2 className="text-sm font-semibold text-[var(--color-text)]">
+            <h2 className="mb-2 text-sm font-semibold text-[var(--color-text)]">
               Rotina matinal
             </h2>
             {steps.length === 0 ? (
-              <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+              <p className="text-sm text-[var(--color-text-muted)]">
                 Sua rotina ainda não tem etapas. Adicione em "Rotina".
               </p>
             ) : (
-              <div className="mt-2 flex flex-col gap-2">
+              <Card className="divide-y divide-[var(--color-border)] overflow-hidden py-0">
                 {steps.map((step) => (
                   <ChecklistItem
                     key={step.id}
@@ -277,20 +298,20 @@ export function DashboardPage() {
                     onToggle={() => toggleStepMutation.mutate(step)}
                   />
                 ))}
-              </div>
+              </Card>
             )}
           </section>
 
           <section>
-            <h2 className="text-sm font-semibold text-[var(--color-text)]">
+            <h2 className="mb-2 text-sm font-semibold text-[var(--color-text)]">
               Hábitos de hoje
             </h2>
             {dueHabitsToday.length === 0 ? (
-              <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+              <p className="text-sm text-[var(--color-text-muted)]">
                 Nenhum hábito programado para hoje.
               </p>
             ) : (
-              <div className="mt-2 flex flex-col gap-2">
+              <Card className="divide-y divide-[var(--color-border)] overflow-hidden py-0">
                 {dueHabitsToday.map((habit) => (
                   <ChecklistItem
                     key={habit.id}
@@ -299,20 +320,20 @@ export function DashboardPage() {
                     onToggle={() => toggleHabitMutation.mutate(habit)}
                   />
                 ))}
-              </div>
+              </Card>
             )}
           </section>
 
           <section>
-            <h2 className="text-sm font-semibold text-[var(--color-text)]">
+            <h2 className="mb-2 text-sm font-semibold text-[var(--color-text)]">
               Tarefas de hoje
             </h2>
             {todayTasks.length === 0 ? (
-              <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+              <p className="text-sm text-[var(--color-text-muted)]">
                 Nenhuma tarefa para hoje.
               </p>
             ) : (
-              <div className="mt-2 flex flex-col gap-2">
+              <Card className="divide-y divide-[var(--color-border)] overflow-hidden py-0">
                 {todayTasks.map((task) => (
                   <ChecklistItem
                     key={task.id}
@@ -321,7 +342,7 @@ export function DashboardPage() {
                     onToggle={() => toggleTaskMutation.mutate(task)}
                   />
                 ))}
-              </div>
+              </Card>
             )}
           </section>
 

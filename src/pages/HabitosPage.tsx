@@ -173,10 +173,12 @@ export function HabitosPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-3xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold">Hábitos</h1>
+          <h1 className="font-heading text-2xl font-bold text-[var(--color-text)]">
+            Hábitos
+          </h1>
           <p className="text-sm text-[var(--color-text-muted)]">
             Sono, hidratação, exercícios, estudos, meditação — todo dia ou em
             dias específicos.
@@ -187,7 +189,7 @@ export function HabitosPage() {
         </Button>
       </div>
 
-      <div className="mt-6 flex flex-col gap-3">
+      <div className="mt-6">
         {habitsQuery.isLoading && (
           <p className="text-sm text-[var(--color-text-muted)]">
             Carregando hábitos…
@@ -206,34 +208,38 @@ export function HabitosPage() {
               consistência.
             </Card>
           )}
-        {habits.map((habit) => {
-          const weekdays = weekdaysByHabit.get(habit.id) ?? []
-          const dueToday = isHabitDueOnDate(habit, weekdays)
-          const streak = calculateHabitStreak(
-            completionDatesByHabit.get(habit.id) ?? [],
-            habit.frequency_type,
-            weekdays,
-            today,
-          )
-          return (
-            <HabitItem
-              key={habit.id}
-              habit={habit}
-              category={
-                habit.category_id
-                  ? categoriesById.get(habit.category_id)
-                  : undefined
-              }
-              weekdays={weekdays}
-              dueToday={dueToday}
-              completedToday={completedHabitIds.has(habit.id)}
-              streak={streak}
-              onToggleComplete={(h) => toggleMutation.mutate(h)}
-              onEdit={openEditModal}
-              onArchive={handleArchive}
-            />
-          )
-        })}
+        {habits.length > 0 && (
+          <Card className="divide-y divide-[var(--color-border)] overflow-hidden py-0">
+            {habits.map((habit) => {
+              const weekdays = weekdaysByHabit.get(habit.id) ?? []
+              const dueToday = isHabitDueOnDate(habit, weekdays)
+              const streak = calculateHabitStreak(
+                completionDatesByHabit.get(habit.id) ?? [],
+                habit.frequency_type,
+                weekdays,
+                today,
+              )
+              return (
+                <HabitItem
+                  key={habit.id}
+                  habit={habit}
+                  category={
+                    habit.category_id
+                      ? categoriesById.get(habit.category_id)
+                      : undefined
+                  }
+                  weekdays={weekdays}
+                  dueToday={dueToday}
+                  completedToday={completedHabitIds.has(habit.id)}
+                  streak={streak}
+                  onToggleComplete={(h) => toggleMutation.mutate(h)}
+                  onEdit={openEditModal}
+                  onArchive={handleArchive}
+                />
+              )
+            })}
+          </Card>
+        )}
       </div>
 
       {modalOpen && (

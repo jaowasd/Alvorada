@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { MoreVertical, Pencil, Trash2 } from 'lucide-react'
-import { Card } from '@/components/ui/Card'
 import { cn } from '@/lib/cn'
 import { getLocalDateString } from '@/lib/date'
 import type { Category, Task } from '@/types/database'
@@ -29,7 +28,7 @@ export function TaskItem({
   const late = isLate(task)
 
   return (
-    <Card className="flex items-start gap-3 p-4">
+    <div className="flex items-start gap-3 px-4 py-3 transition hover:bg-[var(--color-bg)]">
       <input
         type="checkbox"
         checked={task.is_completed}
@@ -114,6 +113,6 @@ export function TaskItem({
           </div>
         )}
       </div>
-    </Card>
+    </div>
   )
 }

@@ -85,7 +85,7 @@ function RailButton({
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { signOut } = useAuth()
+  const { signOut, user } = useAuth()
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
@@ -115,6 +115,17 @@ export function AppShell({ children }: { children: ReactNode }) {
         </aside>
 
         <div className="min-w-0 flex-1 pb-20 sm:pb-0">
+          <header className="hidden items-center justify-end border-b border-[var(--color-border)]/60 px-8 py-4 sm:flex">
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-[var(--color-text-muted)]">
+                {user?.email}
+              </span>
+              <div className="from-primary-500 to-accent-500 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br text-xs font-semibold text-white">
+                {user?.email?.[0]?.toUpperCase()}
+              </div>
+            </div>
+          </header>
+
           <header className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-3 sm:hidden">
             <span className="font-heading text-lg font-semibold">Alvorada</span>
             <div className="flex items-center gap-2">

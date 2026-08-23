@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, MoreVertical, Pencil, Trash2 } from 'lucide-react'
-import { Card } from '@/components/ui/Card'
 import { cn } from '@/lib/cn'
 import type { Category, RoutineStep } from '@/types/database'
 
@@ -40,7 +39,14 @@ export function SortableStepItem({
   }
 
   return (
-    <Card ref={setNodeRef} style={style} className="flex items-start gap-3 p-4">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        'relative flex items-start gap-3 bg-[var(--color-surface)] px-4 py-3 transition-colors hover:bg-[var(--color-bg)]',
+        isDragging && 'z-10',
+      )}
+    >
       <button
         type="button"
         aria-label="Arrastar para reordenar"
@@ -124,6 +130,6 @@ export function SortableStepItem({
           </div>
         )}
       </div>
-    </Card>
+    </div>
   )
 }

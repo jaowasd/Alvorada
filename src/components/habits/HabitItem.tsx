@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Flame, MoreVertical, Pencil, Trash2 } from 'lucide-react'
-import { Card } from '@/components/ui/Card'
 import { cn } from '@/lib/cn'
 import type { StreakStats } from '@/lib/streaks'
 import { WEEKDAY_LABELS } from '@/lib/validation/habit'
@@ -32,7 +31,7 @@ export function HabitItem({
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <Card className="flex items-start gap-3 p-4">
+    <div className="flex items-start gap-3 px-4 py-3 transition hover:bg-[var(--color-bg)]">
       <input
         type="checkbox"
         checked={completedToday}
@@ -123,6 +122,6 @@ export function HabitItem({
           </div>
         )}
       </div>
-    </Card>
+    </div>
   )
 }

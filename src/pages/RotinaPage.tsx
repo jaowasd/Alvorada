@@ -192,10 +192,12 @@ export function RotinaPage() {
   const isError = routineQuery.isError || stepsQuery.isError
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-3xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold">Rotina matinal</h1>
+          <h1 className="font-heading text-2xl font-bold text-[var(--color-text)]">
+            Rotina matinal
+          </h1>
           <p className="text-sm text-[var(--color-text-muted)]">
             Monte sua manhã em etapas, na ordem que funciona para você.
           </p>
@@ -209,7 +211,7 @@ export function RotinaPage() {
         </Button>
       </div>
 
-      <div className="mt-6 flex flex-col gap-3">
+      <div className="mt-6">
         {isLoading && (
           <p className="text-sm text-[var(--color-text-muted)]">
             Carregando rotina…
@@ -225,32 +227,36 @@ export function RotinaPage() {
             Sua rotina ainda não tem etapas. Adicione a primeira para começar.
           </Card>
         )}
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={steps.map((step) => step.id)}
-            strategy={verticalListSortingStrategy}
+        {steps.length > 0 && (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            {steps.map((step) => (
-              <SortableStepItem
-                key={step.id}
-                step={step}
-                category={
-                  step.category_id
-                    ? categoriesById.get(step.category_id)
-                    : undefined
-                }
-                completed={completedStepIds.has(step.id)}
-                onToggleComplete={(s) => toggleMutation.mutate(s)}
-                onEdit={openEditModal}
-                onDelete={handleDelete}
-              />
-            ))}
-          </SortableContext>
-        </DndContext>
+            <SortableContext
+              items={steps.map((step) => step.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <Card className="divide-y divide-[var(--color-border)] overflow-hidden py-0">
+                {steps.map((step) => (
+                  <SortableStepItem
+                    key={step.id}
+                    step={step}
+                    category={
+                      step.category_id
+                        ? categoriesById.get(step.category_id)
+                        : undefined
+                    }
+                    completed={completedStepIds.has(step.id)}
+                    onToggleComplete={(s) => toggleMutation.mutate(s)}
+                    onEdit={openEditModal}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </Card>
+            </SortableContext>
+          </DndContext>
+        )}
       </div>
 
       {modalOpen && (

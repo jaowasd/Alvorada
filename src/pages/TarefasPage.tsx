@@ -105,10 +105,12 @@ export function TarefasPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-3xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold">Tarefas</h1>
+          <h1 className="font-heading text-2xl font-bold text-[var(--color-text)]">
+            Tarefas
+          </h1>
           <p className="text-sm text-[var(--color-text-muted)]">
             Suas tarefas avulsas, além da rotina matinal e dos hábitos.
           </p>
@@ -118,7 +120,7 @@ export function TarefasPage() {
         </Button>
       </div>
 
-      <div className="mt-6 flex flex-col gap-3">
+      <div className="mt-6">
         {tasksQuery.isLoading && (
           <p className="text-sm text-[var(--color-text-muted)]">
             Carregando tarefas…
@@ -134,20 +136,24 @@ export function TarefasPage() {
             Nenhuma tarefa ainda. Crie a primeira para começar.
           </Card>
         )}
-        {tasksQuery.data?.map((task) => (
-          <TaskItem
-            key={task.id}
-            task={task}
-            category={
-              task.category_id
-                ? categoriesById.get(task.category_id)
-                : undefined
-            }
-            onToggleComplete={(t) => toggleMutation.mutate(t)}
-            onEdit={openEditModal}
-            onDelete={handleDelete}
-          />
-        ))}
+        {tasksQuery.data && tasksQuery.data.length > 0 && (
+          <Card className="divide-y divide-[var(--color-border)] overflow-hidden py-0">
+            {tasksQuery.data.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                category={
+                  task.category_id
+                    ? categoriesById.get(task.category_id)
+                    : undefined
+                }
+                onToggleComplete={(t) => toggleMutation.mutate(t)}
+                onEdit={openEditModal}
+                onDelete={handleDelete}
+              />
+            ))}
+          </Card>
+        )}
       </div>
 
       {modalOpen && (

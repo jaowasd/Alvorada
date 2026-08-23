@@ -14,7 +14,7 @@ export function ChecklistItem({
   onToggle,
 }: ChecklistItemProps) {
   return (
-    <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+    <label className="flex cursor-pointer items-center gap-3 px-4 py-3 transition hover:bg-[var(--color-bg)]">
       <input
         type="checkbox"
         checked={completed}
