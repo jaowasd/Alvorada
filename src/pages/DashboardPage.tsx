@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Flame } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
+import { ProgressRing } from '@/components/ui/ProgressRing'
 import { ChecklistItem } from '@/components/dashboard/ChecklistItem'
 import { useAuth } from '@/hooks/useAuth'
 import { getGreeting, getLocalDateString } from '@/lib/date'
@@ -211,24 +212,20 @@ export function DashboardPage() {
                 ? `${totalCompleted} de ${totalDue} concluídos hoje`
                 : 'Nada programado para hoje ainda'}
           </p>
+          {routineStreak.currentStreak > 0 && (
+            <div className="from-primary-500 to-accent-500 mt-3 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r px-3 py-1.5 text-sm font-semibold text-white">
+              <Flame size={16} />
+              {routineStreak.currentStreak}{' '}
+              {routineStreak.currentStreak === 1 ? 'dia' : 'dias'}
+            </div>
+          )}
         </div>
-        {routineStreak.currentStreak > 0 && (
-          <div className="from-primary-500 to-accent-500 flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r px-3 py-1.5 text-sm font-semibold whitespace-nowrap text-white">
-            <Flame size={16} />
-            {routineStreak.currentStreak}{' '}
-            {routineStreak.currentStreak === 1 ? 'dia' : 'dias'}
-          </div>
+        {totalDue > 0 && (
+          <ProgressRing percent={progressPercent} size={88} strokeWidth={8}>
+            <span className="text-lg font-bold">{progressPercent}%</span>
+          </ProgressRing>
         )}
       </div>
-
-      {totalDue > 0 && (
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-[var(--color-border)]">
-          <div
-            className="from-primary-500 to-accent-500 h-full rounded-full bg-gradient-to-r transition-all"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-      )}
 
       {isLoading && (
         <p className="mt-8 text-sm text-[var(--color-text-muted)]">

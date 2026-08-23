@@ -6,6 +6,7 @@ import {
   LogOut,
   Sunrise,
   Waypoints,
+  type LucideIcon,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { useAuth } from '@/hooks/useAuth'
@@ -18,46 +19,98 @@ const navItems = [
   { to: '/app/tarefas', label: 'Tarefas', icon: ListChecks, end: false },
 ]
 
+function RailTooltip({ label }: { label: string }) {
+  return (
+    <span className="pointer-events-none absolute top-1/2 left-full z-20 ml-2 -translate-y-1/2 rounded-md bg-[var(--color-text)] px-2 py-1 text-xs font-medium whitespace-nowrap text-[var(--color-bg)] opacity-0 shadow-lg transition group-hover:opacity-100">
+      {label}
+    </span>
+  )
+}
+
+function RailLink({
+  to,
+  end,
+  label,
+  icon: Icon,
+}: {
+  to: string
+  end?: boolean
+  label: string
+  icon: LucideIcon
+}) {
+  return (
+    <div className="group relative">
+      <NavLink
+        to={to}
+        end={end}
+        aria-label={label}
+        className={({ isActive }) =>
+          cn(
+            'flex h-11 w-11 items-center justify-center rounded-xl transition',
+            isActive
+              ? 'bg-primary-500/10 text-primary-600'
+              : 'text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/40',
+          )
+        }
+      >
+        <Icon size={20} />
+      </NavLink>
+      <RailTooltip label={label} />
+    </div>
+  )
+}
+
+function RailButton({
+  onClick,
+  label,
+  children,
+}: {
+  onClick: () => void
+  label: string
+  children: ReactNode
+}) {
+  return (
+    <div className="group relative">
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={label}
+        className="flex h-11 w-11 items-center justify-center rounded-xl text-[var(--color-text-muted)] transition hover:bg-[var(--color-border)]/40"
+      >
+        {children}
+      </button>
+      <RailTooltip label={label} />
+    </div>
+  )
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const { signOut } = useAuth()
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <div className="mx-auto flex max-w-5xl">
-        <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-[var(--color-border)] p-4 sm:flex">
-          <span className="font-heading px-2 text-lg font-semibold">
-            Alvorada
-          </span>
-          <nav className="mt-6 flex flex-col gap-1">
-            {navItems.map(({ to, label, icon: Icon, end }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={end}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition',
-                    isActive
-                      ? 'bg-primary-500/10 text-primary-600'
-                      : 'text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/30',
-                  )
-                }
-              >
-                <Icon size={18} />
-                {label}
-              </NavLink>
+        <aside className="sticky top-0 hidden h-screen w-[72px] shrink-0 flex-col items-center border-r border-[var(--color-border)]/60 py-4 sm:flex">
+          <NavLink
+            to="/app"
+            end
+            aria-label="Alvorada"
+            className="from-primary-500 to-accent-500 font-heading mb-6 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br text-sm font-bold text-white"
+          >
+            A
+          </NavLink>
+
+          <nav className="flex flex-1 flex-col items-center gap-1">
+            {navItems.map((item) => (
+              <RailLink key={item.to} {...item} />
             ))}
           </nav>
-          <div className="mt-auto flex items-center justify-between px-2">
+
+          <div className="flex flex-col items-center gap-2">
             <ThemeToggle />
-            <button
-              type="button"
-              onClick={() => void signOut()}
-              aria-label="Sair"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/30"
-            >
+            <RailButton label="Sair" onClick={() => void signOut()}>
               <LogOut size={18} />
-            </button>
+            </RailButton>
           </div>
         </aside>
 
