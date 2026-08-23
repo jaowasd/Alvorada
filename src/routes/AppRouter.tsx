@@ -1,4 +1,5 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom'
+import { AppShell } from '@/components/AppShell'
 import { LandingPage } from '@/pages/LandingPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { CadastroPage } from '@/pages/CadastroPage'
@@ -6,6 +7,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { RecuperarSenhaPage } from '@/pages/RecuperarSenhaPage'
 import { RedefinirSenhaPage } from '@/pages/RedefinirSenhaPage'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { TarefasPage } from '@/pages/TarefasPage'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 import { PublicOnlyRoute } from '@/routes/PublicOnlyRoute'
 
@@ -36,10 +38,15 @@ export function AppRouter() {
           path="/app"
           element={
             <ProtectedRoute>
-              <DashboardPage />
+              <AppShell>
+                <Outlet />
+              </AppShell>
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<DashboardPage />} />
+          <Route path="tarefas" element={<TarefasPage />} />
+        </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
