@@ -81,3 +81,96 @@ export interface HabitCompletion {
   completion_date: string
   completed_at: string
 }
+
+export type FinanceTransactionType = 'income' | 'expense' | 'transfer'
+export type FinanceTransactionStatus = 'planned' | 'confirmed'
+export type FinancePaymentMethod =
+  | 'pix'
+  | 'boleto'
+  | 'debit_card'
+  | 'credit_card'
+  | 'cash'
+  | 'bank_transfer'
+  | 'other'
+export type FinanceCategoryKind = 'income' | 'expense'
+export type FinanceAccountType =
+  'checking' | 'savings' | 'wallet' | 'cash' | 'investment' | 'other'
+export type FinanceRecurringFrequency = 'monthly' | 'weekly'
+
+export interface FinanceSettings {
+  user_id: string
+  currency: string
+  monthly_income_cents: number | null
+  created_at: string
+  updated_at: string
+}
+
+export interface FinanceCategory {
+  id: string
+  user_id: string | null
+  name: string
+  kind: FinanceCategoryKind
+  parent_category_id: string | null
+  icon: string
+  color: string
+  is_system: boolean
+  archived_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface FinanceAccount {
+  id: string
+  user_id: string
+  name: string
+  type: FinanceAccountType
+  initial_balance_cents: number
+  include_in_total: boolean
+  icon: string
+  color: string
+  archived_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface FinanceTransaction {
+  id: string
+  user_id: string
+  type: FinanceTransactionType
+  description: string
+  amount_cents: number
+  category_id: string | null
+  account_id: string
+  related_account_id: string | null
+  payment_method: FinancePaymentMethod | null
+  status: FinanceTransactionStatus
+  due_date: string
+  paid_at: string | null
+  notes: string | null
+  recurring_transaction_id: string | null
+  reversal_of_transaction_id: string | null
+  deleted_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface FinanceRecurringTransaction {
+  id: string
+  user_id: string
+  type: Exclude<FinanceTransactionType, 'transfer'>
+  description: string
+  amount_cents: number
+  is_variable_amount: boolean
+  category_id: string | null
+  account_id: string
+  frequency: FinanceRecurringFrequency
+  day_of_month: number | null
+  weekday: number | null
+  start_date: string
+  end_date: string | null
+  last_generated_date: string | null
+  is_active: boolean
+  archived_at: string | null
+  created_at: string
+  updated_at: string
+}
