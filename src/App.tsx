@@ -1,15 +1,11 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { LandingPage } from '@/pages/LandingPage'
-import { NotFoundPage } from '@/pages/NotFoundPage'
+import { AuthProvider } from '@/context/AuthProvider'
+import { AppRouter } from '@/routes/AppRouter'
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <AppRouter />
+    </AuthProvider>
   )
 }
 
