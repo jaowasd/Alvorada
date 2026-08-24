@@ -1,0 +1,8 @@
+# Config mínima só para as Edge Functions do projeto — não inicializa o stack
+# local do Supabase (banco/auth/storage locais), que este projeto não usa.
+
+[functions.export-ics]
+# Apps de calendário externo fazem GET periódico sem sessão Supabase, então
+# não têm como enviar um JWT válido. A autenticação real acontece dentro da
+# função, por token de longa duração (ver supabase/functions/export-ics).
+verify_jwt = false

@@ -2,8 +2,16 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, Download, Laptop, Moon, Sun } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  AlertTriangle,
+  Check,
+  Copy,
+  Download,
+  Laptop,
+  Moon,
+  Sun,
+} from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -16,7 +24,13 @@ import { cn } from '@/lib/cn'
 import { buildUserDataExport, downloadJson } from '@/lib/exportUserData'
 import { getLocalDateString } from '@/lib/date'
 import { interactiveStates } from '@/lib/interactive-states'
+import {
+  fetchIcsExportToken,
+  generateIcsExportToken,
+  revokeIcsExportToken,
+} from '@/lib/queries/icsExportTokens'
 import { deleteOwnAccount, updateProfile } from '@/lib/queries/profile'
+import { supabaseUrl } from '@/lib/supabase'
 import { BRAZIL_TIMEZONES } from '@/lib/timezones'
 import type { Theme } from '@/hooks/useTheme'
 import {
@@ -42,6 +56,36 @@ export function ConfiguracoesPage() {
   const [exportError, setExportError] = useState<string | null>(null)
   const [confirmEmail, setConfirmEmail] = useState('')
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [icsCopied, setIcsCopied] = useState(false)
+
+  const icsTokenQuery = useQuery({
+    queryKey: ['icsExportToken', user?.id],
+    queryFn: () => fetchIcsExportToken(user!.id),
+    enabled: !!user,
+  })
+
+  const invalidateIcsToken = () =>
+    queryClient.invalidateQueries({ queryKey: ['icsExportToken', user?.id] })
+
+  const generateIcsMutation = useMutation({
+    mutationFn: () => generateIcsExportToken(user!.id),
+    onSuccess: invalidateIcsToken,
+  })
+
+  const revokeIcsMutation = useMutation({
+    mutationFn: () => revokeIcsExportToken(user!.id),
+    onSuccess: invalidateIcsToken,
+  })
+
+  const icsUrl = icsTokenQuery.data
+    ? `${supabaseUrl}/functions/v1/export-ics?token=${icsTokenQuery.data.token}`
+    : ''
+
+  const handleCopyIcsUrl = async () => {
+    await navigator.clipboard.writeText(icsUrl)
+    setIcsCopied(true)
+    setTimeout(() => setIcsCopied(false), 2000)
+  }
 
   const {
     register: registerTimezone,
@@ -200,6 +244,65 @@ export function ConfiguracoesPage() {
           <Download size={16} />
           {isExporting ? 'Exportando…' : 'Exportar dados'}
         </Button>
+      </Card>
+
+      <Card className="mt-6 p-6">
+        <h2 className="text-sm font-semibold text-[var(--color-text)]">
+          Exportar para calendário (.ics)
+        </h2>
+        <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+          Gera um link de assinatura com os prazos de tarefas e vencimentos
+          financeiros, pra acompanhar no Google Calendar, Apple Calendar etc.
+        </p>
+
+        {!icsTokenQuery.isLoading && !icsTokenQuery.data && (
+          <Button
+            variant="secondary"
+            onClick={() => generateIcsMutation.mutate()}
+            disabled={generateIcsMutation.isPending}
+            className="mt-4"
+          >
+            Gerar link de assinatura
+          </Button>
+        )}
+
+        {icsTokenQuery.data && (
+          <div className="mt-4 flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <input
+                readOnly
+                value={icsUrl}
+                className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
+              />
+              <button
+                type="button"
+                onClick={() => void handleCopyIcsUrl()}
+                aria-label="Copiar link"
+                className={cn(
+                  'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-bg)]',
+                  interactiveStates,
+                )}
+              >
+                {icsCopied ? (
+                  <Check size={16} className="text-success-600" />
+                ) : (
+                  <Copy size={16} />
+                )}
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => revokeIcsMutation.mutate()}
+              disabled={revokeIcsMutation.isPending}
+              className={cn(
+                'text-error-500 self-start text-sm font-medium disabled:opacity-50',
+                interactiveStates,
+              )}
+            >
+              Revogar link
+            </button>
+          </div>
+        )}
       </Card>
 
       <Card className="border-error-500/30 mt-6 p-6">

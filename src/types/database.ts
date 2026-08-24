@@ -204,6 +204,13 @@ export interface GoalProgressEntry {
   created_at: string
 }
 
+export interface IcsExportToken {
+  id: string
+  user_id: string
+  token: string
+  created_at: string
+}
+
 export interface SharedRoutineLink {
   id: string
   routine_id: string
