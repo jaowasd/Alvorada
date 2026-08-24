@@ -300,13 +300,13 @@ export function FinancasDashboardPage() {
                           </div>
                           <div className="mt-1 h-2 overflow-hidden rounded-full bg-[var(--color-bg)]">
                             <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${percent}%` }}
+                              initial={{ scaleX: 0 }}
+                              animate={{ scaleX: percent / 100 }}
                               transition={{
                                 duration: 0.5,
                                 ease: EASE_SMOOTH,
                               }}
-                              className="h-full rounded-full"
+                              className="h-full w-full origin-left rounded-full"
                               style={{
                                 backgroundColor: category?.color ?? '#78716c',
                               }}
