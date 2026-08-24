@@ -14,6 +14,7 @@ import { buttonVariants } from '@/lib/button-variants'
 import { EASE_SMOOTH, fadeUp, staggerContainer } from '@/lib/motion'
 import { Card } from '@/components/ui/Card'
 import { Logo } from '@/components/Logo'
+import { PricingTable } from '@/components/premium/PricingTable'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { TiltCard } from '@/components/ui/TiltCard'
@@ -172,6 +173,12 @@ export function LandingPage() {
         <Logo />
         <div className="flex items-center gap-3">
           <ThemeToggle />
+          <a
+            href="#precos"
+            className="hidden text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] sm:inline-block"
+          >
+            Preços
+          </a>
           <Link to="/login" className={buttonVariants('ghost')}>
             Entrar
           </Link>
@@ -245,7 +252,7 @@ export function LandingPage() {
                 className="mt-8 flex flex-wrap items-center gap-3"
               >
                 <Badge tone="dark">
-                  <strong className="font-bold">100%</strong> grátis
+                  <strong className="font-bold">Grátis</strong> para começar
                 </Badge>
                 <Badge tone="light">
                   <Flame size={14} className="text-primary-600" />
@@ -304,6 +311,56 @@ export function LandingPage() {
                 </TiltCard>
               </motion.div>
             ))}
+          </motion.div>
+        </section>
+
+        <section id="precos" className="mx-auto max-w-5xl px-6 pb-24">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.5 }}
+            className="text-center"
+          >
+            <span className="text-primary-600 text-xs font-semibold tracking-wide uppercase">
+              Preços
+            </span>
+            <h2 className="font-heading mt-2 text-3xl font-bold sm:text-4xl">
+              Comece de graça,{' '}
+              <span className="text-primary-600">evolua quando quiser</span>
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-sm text-[var(--color-text-muted)]">
+              O Alvorada é gratuito para organizar sua rotina, hábitos e
+              finanças. O Premium adiciona estatísticas e relatórios avançados
+              para quem quer ir mais fundo.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="mt-10"
+          >
+            <PricingTable
+              freeCta={
+                <Link
+                  to="/cadastro"
+                  className={cn(buttonVariants('secondary'), 'w-full')}
+                >
+                  Criar conta grátis
+                </Link>
+              }
+              premiumCta={
+                <Link
+                  to="/cadastro"
+                  className={cn(buttonVariants('primary'), 'w-full')}
+                >
+                  Criar conta e assinar
+                </Link>
+              }
+            />
           </motion.div>
         </section>
 

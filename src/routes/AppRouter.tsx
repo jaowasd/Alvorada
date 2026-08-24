@@ -49,6 +49,9 @@ const ConfiguracoesPage = lazy(() =>
     default: m.ConfiguracoesPage,
   })),
 )
+const PremiumPage = lazy(() =>
+  import('@/pages/PremiumPage').then((m) => ({ default: m.PremiumPage })),
+)
 const FinancasLayout = lazy(() =>
   import('@/pages/financas/FinancasLayout').then((m) => ({
     default: m.FinancasLayout,
@@ -144,6 +147,7 @@ export function AppRouter() {
             <Route path="metas" element={<MetasPage />} />
             <Route path="tarefas" element={<TarefasPage />} />
             <Route path="perfil" element={<PerfilPage />} />
+            <Route path="premium" element={<PremiumPage />} />
             <Route path="configuracoes" element={<ConfiguracoesPage />} />
             <Route path="financas" element={<FinancasLayout />}>
               <Route index element={<FinancasDashboardPage />} />

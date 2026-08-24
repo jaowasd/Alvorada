@@ -1,4 +1,5 @@
 export type ThemePreference = 'light' | 'dark' | 'system'
+export type PlanTier = 'free' | 'premium'
 
 export interface Profile {
   id: string
@@ -8,6 +9,8 @@ export interface Profile {
   wake_time_target: string | null
   theme_preference: ThemePreference
   onboarding_completed_at: string | null
+  plan: PlanTier
+  plan_updated_at: string | null
   created_at: string
   updated_at: string
 }

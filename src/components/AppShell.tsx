@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   Calendar,
+  Crown,
   HeartPulse,
   ListChecks,
   LogOut,
@@ -16,10 +17,12 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { Logo } from '@/components/Logo'
+import { PremiumBadge } from '@/components/premium/PremiumBadge'
 import { ReminderBell } from '@/components/reminders/ReminderBell'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { useDisplayName } from '@/hooks/useProfile'
 import { useAuth } from '@/hooks/useAuth'
+import { usePlan } from '@/hooks/usePlan'
 import { cn } from '@/lib/cn'
 import { interactiveStates } from '@/lib/interactive-states'
 import { EASE_SMOOTH, SPRING_SNAPPY } from '@/lib/motion'
@@ -46,6 +49,7 @@ const moreMenuItems = [
   { to: '/app/metas', label: 'Metas', icon: Target },
   { to: '/app/tarefas', label: 'Tarefas', icon: ListChecks },
   { to: '/app/perfil', label: 'Perfil', icon: UserRound },
+  { to: '/app/premium', label: 'Meu plano', icon: Crown },
 ]
 
 const financeSubItems = [
@@ -127,6 +131,28 @@ function SidebarSubLink({
   )
 }
 
+function PlanChip({ isPremium }: { isPremium: boolean }) {
+  return (
+    <NavLink
+      to="/app/premium"
+      className={cn(
+        'flex items-center justify-between rounded-lg px-2 py-1.5 text-xs',
+        interactiveStates,
+        'hover:bg-[var(--color-bg)]',
+      )}
+    >
+      {isPremium ? (
+        <PremiumBadge />
+      ) : (
+        <>
+          <span className="text-[var(--color-text-muted)]">Plano Free</span>
+          <span className="text-primary-600 font-medium">Upgrade</span>
+        </>
+      )}
+    </NavLink>
+  )
+}
+
 function UserAvatar({ name }: { name: string }) {
   return (
     <div className="from-primary-500 to-primary-700 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-xs font-semibold text-white">
@@ -139,6 +165,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { signOut } = useAuth()
   const location = useLocation()
   const displayName = useDisplayName()
+  const plan = usePlan()
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
 
   const isInMoreSection = moreMenuItems.some((item) =>
@@ -162,11 +189,14 @@ export function AppShell({ children }: { children: ReactNode }) {
     : null
   const isInPerfil = location.pathname.startsWith('/app/perfil')
   const isInConfiguracoes = location.pathname.startsWith('/app/configuracoes')
+  const isInPremium = location.pathname.startsWith('/app/premium')
   const headerTitle = isInPerfil
     ? 'Perfil'
     : isInConfiguracoes
       ? 'Configurações'
-      : (currentFinanceSubItem?.label ?? currentItem.label)
+      : isInPremium
+        ? 'Meu plano'
+        : (currentFinanceSubItem?.label ?? currentItem.label)
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
@@ -216,6 +246,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 {displayName}
               </span>
             </NavLink>
+            <PlanChip isPremium={plan === 'premium'} />
             <div className="flex items-center gap-2 px-1">
               <NavLink
                 to="/app/configuracoes"

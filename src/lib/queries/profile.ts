@@ -1,5 +1,5 @@
 import { requireSupabase } from '@/lib/supabase'
-import type { Profile, ThemePreference } from '@/types/database'
+import type { PlanTier, Profile, ThemePreference } from '@/types/database'
 
 export interface ProfileInput {
   display_name: string | null
@@ -38,4 +38,12 @@ export async function deleteOwnAccount(): Promise<void> {
   const client = requireSupabase()
   const { error } = await client.rpc('delete_own_account')
   if (error) throw error
+}
+
+/** Troca o próprio plano (RPC security definer — ver migration 0015). UPDATE direto na coluna é bloqueado. */
+export async function setOwnPlan(plan: PlanTier): Promise<Profile> {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('set_own_plan', { p_plan: plan })
+  if (error) throw error
+  return data
 }

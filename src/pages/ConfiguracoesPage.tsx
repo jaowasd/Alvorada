@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -12,14 +12,17 @@ import {
   Moon,
   Sun,
 } from 'lucide-react'
+import { PremiumBadge } from '@/components/premium/PremiumBadge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { PageFade } from '@/components/ui/PageFade'
 import { Select } from '@/components/ui/Select'
 import { useAuth } from '@/hooks/useAuth'
+import { usePlan } from '@/hooks/usePlan'
 import { useProfile } from '@/hooks/useProfile'
 import { useSyncedTheme } from '@/hooks/useSyncedTheme'
+import { buttonVariants } from '@/lib/button-variants'
 import { cn } from '@/lib/cn'
 import { buildUserDataExport, downloadJson } from '@/lib/exportUserData'
 import { getLocalDateString } from '@/lib/date'
@@ -51,6 +54,7 @@ export function ConfiguracoesPage() {
   const queryClient = useQueryClient()
   const profileQuery = useProfile()
   const { theme, setTheme } = useSyncedTheme()
+  const plan = usePlan()
 
   const [isExporting, setIsExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
@@ -160,6 +164,26 @@ export function ConfiguracoesPage() {
           Tema, fuso horário e dados da sua conta.
         </p>
       </div>
+
+      <Card className="mt-6 flex items-center justify-between p-6">
+        <div>
+          <h2 className="text-sm font-semibold text-[var(--color-text)]">
+            Plano
+          </h2>
+          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+            {plan === 'premium'
+              ? 'Você tem acesso a todos os recursos Premium.'
+              : 'Você está no plano Free. Faça upgrade para desbloquear recursos avançados.'}
+          </p>
+        </div>
+        {plan === 'premium' ? (
+          <PremiumBadge />
+        ) : (
+          <Link to="/app/premium" className={buttonVariants('secondary')}>
+            Ver Premium
+          </Link>
+        )}
+      </Card>
 
       <Card className="mt-6 p-6">
         <h2 className="text-sm font-semibold text-[var(--color-text)]">Tema</h2>
