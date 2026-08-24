@@ -148,7 +148,11 @@ export function TarefasPage() {
 
       <div className="mt-6">
         {tasksQuery.isLoading && (
-          <p className="text-sm text-[var(--color-text-muted)]">
+          <p
+            role="status"
+            aria-live="polite"
+            className="text-sm text-[var(--color-text-muted)]"
+          >
             Carregando tarefas…
           </p>
         )}
@@ -186,20 +190,22 @@ export function TarefasPage() {
             animate="show"
             className="divide-y divide-[var(--color-border)] overflow-hidden py-0"
           >
-            {filteredTasks.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                category={
-                  task.category_id
-                    ? categoriesById.get(task.category_id)
-                    : undefined
-                }
-                onToggleComplete={(t) => toggleMutation.mutate(t)}
-                onEdit={openEditModal}
-                onDelete={handleDelete}
-              />
-            ))}
+            <AnimatePresence>
+              {filteredTasks.map((task) => (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  category={
+                    task.category_id
+                      ? categoriesById.get(task.category_id)
+                      : undefined
+                  }
+                  onToggleComplete={(t) => toggleMutation.mutate(t)}
+                  onEdit={openEditModal}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </AnimatePresence>
           </MotionCard>
         )}
       </div>

@@ -216,7 +216,11 @@ export function RotinaPage() {
 
       <div className="mt-6">
         {isLoading && (
-          <p className="text-sm text-[var(--color-text-muted)]">
+          <p
+            role="status"
+            aria-live="polite"
+            className="text-sm text-[var(--color-text-muted)]"
+          >
             Carregando rotina…
           </p>
         )}

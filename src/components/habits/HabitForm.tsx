@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/cn'
+import { interactiveStates } from '@/lib/interactive-states'
 import {
   WEEKDAY_LABELS,
   habitFormSchema,
@@ -105,7 +106,8 @@ export function HabitForm({
                 type="button"
                 onClick={() => toggleWeekday(day)}
                 className={cn(
-                  'rounded-lg border px-3 py-1.5 text-xs font-medium transition',
+                  'rounded-lg border px-3 py-1.5 text-xs font-medium',
+                  interactiveStates,
                   weekdays.includes(day)
                     ? 'border-primary-500 bg-primary-500/10 text-primary-600'
                     : 'border-[var(--color-border)] text-[var(--color-text-muted)]',

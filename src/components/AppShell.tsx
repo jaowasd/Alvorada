@@ -16,6 +16,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { useDisplayName } from '@/hooks/useProfile'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/cn'
+import { interactiveStates } from '@/lib/interactive-states'
 import { SPRING_SNAPPY } from '@/lib/motion'
 
 const navItems = [
@@ -145,7 +146,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <div className="mx-auto flex max-w-[1400px]">
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-sidebar)] px-4 py-5 sm:flex">
-          <NavLink to="/app" end aria-label="Alvorada" className="px-2">
+          <NavLink to="/app" end className="px-2">
             <Logo />
           </NavLink>
 
@@ -195,7 +196,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                 aria-label="Configurações"
                 className={({ isActive }) =>
                   cn(
-                    'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-[var(--color-bg)]',
+                    'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg hover:bg-[var(--color-bg)]',
+                    interactiveStates,
                     isActive
                       ? 'text-primary-600'
                       : 'text-[var(--color-text-muted)]',
@@ -208,7 +210,10 @@ export function AppShell({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 onClick={() => void signOut()}
-                className="flex flex-1 items-center gap-2 rounded-lg px-2 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg)] hover:text-[var(--color-text)]"
+                className={cn(
+                  'flex flex-1 items-center gap-2 rounded-lg px-2 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:bg-[var(--color-bg)] hover:text-[var(--color-text)]',
+                  interactiveStates,
+                )}
               >
                 <LogOut size={16} />
                 Sair
@@ -247,7 +252,10 @@ export function AppShell({ children }: { children: ReactNode }) {
               <NavLink
                 to="/app/configuracoes"
                 aria-label="Configurações"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg)]"
+                className={cn(
+                  'inline-flex h-9 w-9 items-center justify-center rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-bg)]',
+                  interactiveStates,
+                )}
               >
                 <Settings size={18} />
               </NavLink>
@@ -256,7 +264,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 type="button"
                 onClick={() => void signOut()}
                 aria-label="Sair"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg)]"
+                className={cn(
+                  'inline-flex h-9 w-9 items-center justify-center rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-bg)]',
+                  interactiveStates,
+                )}
               >
                 <LogOut size={18} />
               </button>

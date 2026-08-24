@@ -1,6 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Moon, Sun } from 'lucide-react'
 import { useSyncedTheme } from '@/hooks/useSyncedTheme'
+import { cn } from '@/lib/cn'
+import { interactiveStates } from '@/lib/interactive-states'
 
 export function ThemeToggle() {
   const { theme, setTheme } = useSyncedTheme()
@@ -15,7 +17,10 @@ export function ThemeToggle() {
       type="button"
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       aria-label={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
-      className="relative inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg border border-[var(--color-border)] text-[var(--color-text)] transition-colors hover:bg-[var(--color-bg)]"
+      className={cn(
+        'relative inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-bg)]',
+        interactiveStates,
+      )}
     >
       <AnimatePresence mode="wait" initial={false}>
         <motion.span

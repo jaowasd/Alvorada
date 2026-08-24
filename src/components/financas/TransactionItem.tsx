@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   ArrowDownCircle,
@@ -6,12 +5,13 @@ import {
   ArrowUpCircle,
   Check,
   Copy,
-  MoreVertical,
   Pencil,
   RotateCcw,
   Trash2,
   type LucideIcon,
 } from 'lucide-react'
+import { Badge } from '@/components/ui/Badge'
+import { ItemMenu, type ItemMenuAction } from '@/components/ui/ItemMenu'
 import { cn } from '@/lib/cn'
 import { getLocalDateString } from '@/lib/date'
 import { listItemVariants } from '@/lib/motion'
@@ -51,7 +51,6 @@ export function TransactionItem({
   onReverse,
   onDelete,
 }: TransactionItemProps) {
-  const [menuOpen, setMenuOpen] = useState(false)
   const Icon = TYPE_ICON[transaction.type]
   const confirmed = transaction.status === 'confirmed'
   const late =
@@ -71,9 +70,30 @@ export function TransactionItem({
         ? '-'
         : ''
 
+  const menuActions: ItemMenuAction[] = [
+    { label: 'Editar', icon: Pencil, onClick: () => onEdit(transaction) },
+    { label: 'Duplicar', icon: Copy, onClick: () => onDuplicate(transaction) },
+    ...(confirmed && transaction.type !== 'transfer'
+      ? [
+          {
+            label: 'Estornar',
+            icon: RotateCcw,
+            onClick: () => onReverse(transaction),
+          },
+        ]
+      : []),
+    {
+      label: 'Excluir',
+      icon: Trash2,
+      onClick: () => onDelete(transaction),
+      tone: 'danger',
+    },
+  ]
+
   return (
     <motion.div
       variants={listItemVariants}
+      exit="exit"
       className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-[var(--color-bg)]"
     >
       <button
@@ -143,69 +163,10 @@ export function TransactionItem({
           {amountPrefix}
           {centsToBRL(transaction.amount_cents)}
         </span>
-        {late && (
-          <span className="bg-error-500/10 text-error-500 rounded-full px-2 py-0.5 text-[11px] font-medium">
-            Atrasada
-          </span>
-        )}
+        {late && <Badge tone="error">Atrasada</Badge>}
       </div>
 
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setMenuOpen((open) => !open)}
-          aria-label="Mais ações"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-border)]/40"
-        >
-          <MoreVertical size={16} />
-        </button>
-        {menuOpen && (
-          <div className="shadow-card-lg absolute right-0 z-10 mt-1 w-40 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] py-1">
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false)
-                onEdit(transaction)
-              }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
-            >
-              <Pencil size={14} /> Editar
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false)
-                onDuplicate(transaction)
-              }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
-            >
-              <Copy size={14} /> Duplicar
-            </button>
-            {confirmed && transaction.type !== 'transfer' && (
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false)
-                  onReverse(transaction)
-                }}
-                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
-              >
-                <RotateCcw size={14} /> Estornar
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false)
-                onDelete(transaction)
-              }}
-              className="text-error-500 flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
-            >
-              <Trash2 size={14} /> Excluir
-            </button>
-          </div>
-        )}
-      </div>
+      <ItemMenu actions={menuActions} />
     </motion.div>
   )
 }

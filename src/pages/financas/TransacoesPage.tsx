@@ -208,7 +208,11 @@ export function TransacoesPage() {
 
       <div className="mt-6">
         {isLoading && (
-          <p className="text-sm text-[var(--color-text-muted)]">
+          <p
+            role="status"
+            aria-live="polite"
+            className="text-sm text-[var(--color-text-muted)]"
+          >
             Carregando transações…
           </p>
         )}
@@ -246,28 +250,30 @@ export function TransacoesPage() {
             animate="show"
             className="divide-y divide-[var(--color-border)] overflow-hidden py-0"
           >
-            {filteredTransactions.map((transaction) => (
-              <TransactionItem
-                key={transaction.id}
-                transaction={transaction}
-                category={
-                  transaction.category_id
-                    ? categoriesById.get(transaction.category_id)
-                    : undefined
-                }
-                account={accountsById.get(transaction.account_id)}
-                relatedAccount={
-                  transaction.related_account_id
-                    ? accountsById.get(transaction.related_account_id)
-                    : undefined
-                }
-                onToggleStatus={(t) => toggleStatusMutation.mutate(t)}
-                onEdit={openEditModal}
-                onDuplicate={(t) => duplicateMutation.mutate(t)}
-                onReverse={(t) => reverseMutation.mutate(t)}
-                onDelete={handleDelete}
-              />
-            ))}
+            <AnimatePresence>
+              {filteredTransactions.map((transaction) => (
+                <TransactionItem
+                  key={transaction.id}
+                  transaction={transaction}
+                  category={
+                    transaction.category_id
+                      ? categoriesById.get(transaction.category_id)
+                      : undefined
+                  }
+                  account={accountsById.get(transaction.account_id)}
+                  relatedAccount={
+                    transaction.related_account_id
+                      ? accountsById.get(transaction.related_account_id)
+                      : undefined
+                  }
+                  onToggleStatus={(t) => toggleStatusMutation.mutate(t)}
+                  onEdit={openEditModal}
+                  onDuplicate={(t) => duplicateMutation.mutate(t)}
+                  onReverse={(t) => reverseMutation.mutate(t)}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </AnimatePresence>
           </MotionCard>
         )}
       </div>

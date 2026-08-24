@@ -78,7 +78,13 @@ const NotFoundPage = lazy(() =>
 function PageFallback() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg)]">
-      <p className="text-sm text-[var(--color-text-muted)]">Carregando…</p>
+      <p
+        role="status"
+        aria-live="polite"
+        className="text-sm text-[var(--color-text-muted)]"
+      >
+        Carregando…
+      </p>
     </div>
   )
 }

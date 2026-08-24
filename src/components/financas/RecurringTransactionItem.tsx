@@ -1,6 +1,7 @@
-import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { MoreVertical, Pause, Pencil, Play, Trash2 } from 'lucide-react'
+import { Pause, Pencil, Play, Trash2 } from 'lucide-react'
+import { Badge } from '@/components/ui/Badge'
+import { ItemMenu } from '@/components/ui/ItemMenu'
 import { cn } from '@/lib/cn'
 import { getLocalDateString } from '@/lib/date'
 import { listItemVariants } from '@/lib/motion'
@@ -32,7 +33,6 @@ export function RecurringTransactionItem({
   onToggleActive,
   onArchive,
 }: RecurringTransactionItemProps) {
-  const [menuOpen, setMenuOpen] = useState(false)
   const late =
     currentInstance != null &&
     currentInstance.status === 'planned' &&
@@ -46,6 +46,7 @@ export function RecurringTransactionItem({
   return (
     <motion.div
       variants={listItemVariants}
+      exit="exit"
       className={cn(
         'flex items-start gap-3 px-4 py-3 transition-colors hover:bg-[var(--color-bg)]',
         !recurring.is_active && 'opacity-50',
@@ -56,11 +57,7 @@ export function RecurringTransactionItem({
           <p className="text-sm font-medium text-[var(--color-text)]">
             {recurring.description}
           </p>
-          {!recurring.is_active && (
-            <span className="rounded-full bg-[var(--color-border)] px-2 py-0.5 text-[11px] font-medium text-[var(--color-text-muted)]">
-              Pausada
-            </span>
-          )}
+          {!recurring.is_active && <Badge tone="neutral">Pausada</Badge>}
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted)]">
           {category && (
@@ -113,63 +110,26 @@ export function RecurringTransactionItem({
             Marcar como paga
           </button>
         )}
-        {paid && (
-          <span className="bg-success-500/10 text-success-600 rounded-full px-2 py-0.5 text-[11px] font-medium">
-            Paga
-          </span>
-        )}
-        {late && (
-          <span className="bg-error-500/10 text-error-500 rounded-full px-2 py-0.5 text-[11px] font-medium">
-            Atrasada
-          </span>
-        )}
+        {paid && <Badge tone="success">Paga</Badge>}
+        {late && <Badge tone="error">Atrasada</Badge>}
       </div>
 
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setMenuOpen((open) => !open)}
-          aria-label="Mais ações"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-border)]/40"
-        >
-          <MoreVertical size={16} />
-        </button>
-        {menuOpen && (
-          <div className="shadow-card-lg absolute right-0 z-10 mt-1 w-40 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] py-1">
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false)
-                onEdit(recurring)
-              }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
-            >
-              <Pencil size={14} /> Editar
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false)
-                onToggleActive(recurring)
-              }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
-            >
-              {recurring.is_active ? <Pause size={14} /> : <Play size={14} />}{' '}
-              {recurring.is_active ? 'Pausar' : 'Retomar'}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false)
-                onArchive(recurring)
-              }}
-              className="text-error-500 flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
-            >
-              <Trash2 size={14} /> Arquivar
-            </button>
-          </div>
-        )}
-      </div>
+      <ItemMenu
+        actions={[
+          { label: 'Editar', icon: Pencil, onClick: () => onEdit(recurring) },
+          {
+            label: recurring.is_active ? 'Pausar' : 'Retomar',
+            icon: recurring.is_active ? Pause : Play,
+            onClick: () => onToggleActive(recurring),
+          },
+          {
+            label: 'Arquivar',
+            icon: Trash2,
+            onClick: () => onArchive(recurring),
+            tone: 'danger',
+          },
+        ]}
+      />
     </motion.div>
   )
 }

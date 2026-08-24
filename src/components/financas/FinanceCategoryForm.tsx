@@ -7,6 +7,7 @@ import {
   FINANCE_CATEGORY_COLORS,
   FINANCE_CATEGORY_ICONS,
 } from '@/lib/financeCategoryIcons'
+import { interactiveStates } from '@/lib/interactive-states'
 import {
   financeCategoryFormSchema,
   type FinanceCategoryFormValues,
@@ -80,7 +81,8 @@ export function FinanceCategoryForm({
               aria-label={name}
               aria-pressed={selectedIcon === name}
               className={cn(
-                'flex h-9 w-9 items-center justify-center rounded-lg border transition-colors',
+                'flex h-9 w-9 items-center justify-center rounded-lg border',
+                interactiveStates,
                 selectedIcon === name
                   ? 'border-primary-600 bg-primary-500/10 text-primary-600'
                   : 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg)]',
@@ -109,6 +111,7 @@ export function FinanceCategoryForm({
               aria-pressed={selectedColor === color}
               className={cn(
                 'h-8 w-8 rounded-full border-2 transition-transform',
+                interactiveStates,
                 selectedColor === color
                   ? 'scale-110 border-[var(--color-text)]'
                   : 'border-transparent',

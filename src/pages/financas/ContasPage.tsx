@@ -193,7 +193,11 @@ export function ContasPage() {
 
       <div className="mt-6">
         {isLoading && (
-          <p className="text-sm text-[var(--color-text-muted)]">
+          <p
+            role="status"
+            aria-live="polite"
+            className="text-sm text-[var(--color-text-muted)]"
+          >
             Carregando contas…
           </p>
         )}
@@ -220,18 +224,20 @@ export function ContasPage() {
             animate="show"
             className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
           >
-            {accounts.map((account) => (
-              <AccountItem
-                key={account.id}
-                account={account}
-                balanceCents={calculateAccountBalanceCents(
-                  account,
-                  transactions,
-                )}
-                onEdit={openEditModal}
-                onArchive={handleArchive}
-              />
-            ))}
+            <AnimatePresence>
+              {accounts.map((account) => (
+                <AccountItem
+                  key={account.id}
+                  account={account}
+                  balanceCents={calculateAccountBalanceCents(
+                    account,
+                    transactions,
+                  )}
+                  onEdit={openEditModal}
+                  onArchive={handleArchive}
+                />
+              ))}
+            </AnimatePresence>
           </motion.div>
         )}
       </div>

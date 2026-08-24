@@ -218,7 +218,11 @@ export function ConfiguracoesPage() {
 
       <div className="mt-3">
         {categoriesQuery.isLoading && (
-          <p className="text-sm text-[var(--color-text-muted)]">
+          <p
+            role="status"
+            aria-live="polite"
+            className="text-sm text-[var(--color-text-muted)]"
+          >
             Carregando categorias…
           </p>
         )}
@@ -247,14 +251,16 @@ export function ConfiguracoesPage() {
             animate="show"
             className="divide-y divide-[var(--color-border)] overflow-hidden py-0"
           >
-            {customCategories.map((category) => (
-              <FinanceCategoryItem
-                key={category.id}
-                category={category}
-                onEdit={openEditModal}
-                onArchive={handleArchiveCategory}
-              />
-            ))}
+            <AnimatePresence>
+              {customCategories.map((category) => (
+                <FinanceCategoryItem
+                  key={category.id}
+                  category={category}
+                  onEdit={openEditModal}
+                  onArchive={handleArchiveCategory}
+                />
+              ))}
+            </AnimatePresence>
           </MotionCard>
         )}
       </div>

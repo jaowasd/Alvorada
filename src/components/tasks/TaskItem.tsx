@@ -1,6 +1,7 @@
-import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Check, MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { Check, Pencil, Trash2 } from 'lucide-react'
+import { Badge } from '@/components/ui/Badge'
+import { ItemMenu } from '@/components/ui/ItemMenu'
 import { cn } from '@/lib/cn'
 import { getLocalDateString } from '@/lib/date'
 import { listItemVariants } from '@/lib/motion'
@@ -27,12 +28,12 @@ export function TaskItem({
   onEdit,
   onDelete,
 }: TaskItemProps) {
-  const [menuOpen, setMenuOpen] = useState(false)
   const late = isLate(task)
 
   return (
     <motion.div
       variants={listItemVariants}
+      exit="exit"
       className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-[var(--color-bg)]"
     >
       <label className="relative mt-0.5 inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center">
@@ -103,49 +104,26 @@ export function TaskItem({
         )}
       </div>
       {task.is_completed && (
-        <span className="bg-success-500/10 text-success-600 mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium">
+        <Badge tone="success" className="mt-0.5 shrink-0">
           Concluída
-        </span>
+        </Badge>
       )}
       {!task.is_completed && late && (
-        <span className="bg-error-500/10 text-error-500 mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium">
+        <Badge tone="error" className="mt-0.5 shrink-0">
           Atrasada
-        </span>
+        </Badge>
       )}
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setMenuOpen((open) => !open)}
-          aria-label="Mais ações"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-border)]/40"
-        >
-          <MoreVertical size={16} />
-        </button>
-        {menuOpen && (
-          <div className="shadow-card-lg absolute right-0 z-10 mt-1 w-36 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] py-1">
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false)
-                onEdit(task)
-              }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
-            >
-              <Pencil size={14} /> Editar
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false)
-                onDelete(task)
-              }}
-              className="text-error-500 flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
-            >
-              <Trash2 size={14} /> Excluir
-            </button>
-          </div>
-        )}
-      </div>
+      <ItemMenu
+        actions={[
+          { label: 'Editar', icon: Pencil, onClick: () => onEdit(task) },
+          {
+            label: 'Excluir',
+            icon: Trash2,
+            onClick: () => onDelete(task),
+            tone: 'danger',
+          },
+        ]}
+      />
     </motion.div>
   )
 }

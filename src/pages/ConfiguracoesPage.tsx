@@ -15,6 +15,7 @@ import { useSyncedTheme } from '@/hooks/useSyncedTheme'
 import { cn } from '@/lib/cn'
 import { buildUserDataExport, downloadJson } from '@/lib/exportUserData'
 import { getLocalDateString } from '@/lib/date'
+import { interactiveStates } from '@/lib/interactive-states'
 import { deleteOwnAccount, updateProfile } from '@/lib/queries/profile'
 import { BRAZIL_TIMEZONES } from '@/lib/timezones'
 import type { Theme } from '@/hooks/useTheme'
@@ -129,7 +130,8 @@ export function ConfiguracoesPage() {
               type="button"
               onClick={() => setTheme(value)}
               className={cn(
-                'flex flex-1 flex-col items-center gap-1.5 rounded-xl border px-3 py-3 text-sm font-medium transition-colors',
+                'flex flex-1 flex-col items-center gap-1.5 rounded-xl border px-3 py-3 text-sm font-medium',
+                interactiveStates,
                 theme === value
                   ? 'border-primary-600 bg-primary-500/10 text-primary-600'
                   : 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg)]',

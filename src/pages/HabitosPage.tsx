@@ -217,7 +217,11 @@ export function HabitosPage() {
 
       <div className="mt-6">
         {habitsQuery.isLoading && (
-          <p className="text-sm text-[var(--color-text-muted)]">
+          <p
+            role="status"
+            aria-live="polite"
+            className="text-sm text-[var(--color-text-muted)]"
+          >
             Carregando hábitos…
           </p>
         )}
@@ -256,34 +260,36 @@ export function HabitosPage() {
             animate="show"
             className="divide-y divide-[var(--color-border)] overflow-hidden py-0"
           >
-            {filteredHabits.map((habit) => {
-              const weekdays = weekdaysByHabit.get(habit.id) ?? []
-              const dueToday = isHabitDueOnDate(habit, weekdays)
-              const streak = calculateHabitStreak(
-                completionDatesByHabit.get(habit.id) ?? [],
-                habit.frequency_type,
-                weekdays,
-                today,
-              )
-              return (
-                <HabitItem
-                  key={habit.id}
-                  habit={habit}
-                  category={
-                    habit.category_id
-                      ? categoriesById.get(habit.category_id)
-                      : undefined
-                  }
-                  weekdays={weekdays}
-                  dueToday={dueToday}
-                  completedToday={completedHabitIds.has(habit.id)}
-                  streak={streak}
-                  onToggleComplete={(h) => toggleMutation.mutate(h)}
-                  onEdit={openEditModal}
-                  onArchive={handleArchive}
-                />
-              )
-            })}
+            <AnimatePresence>
+              {filteredHabits.map((habit) => {
+                const weekdays = weekdaysByHabit.get(habit.id) ?? []
+                const dueToday = isHabitDueOnDate(habit, weekdays)
+                const streak = calculateHabitStreak(
+                  completionDatesByHabit.get(habit.id) ?? [],
+                  habit.frequency_type,
+                  weekdays,
+                  today,
+                )
+                return (
+                  <HabitItem
+                    key={habit.id}
+                    habit={habit}
+                    category={
+                      habit.category_id
+                        ? categoriesById.get(habit.category_id)
+                        : undefined
+                    }
+                    weekdays={weekdays}
+                    dueToday={dueToday}
+                    completedToday={completedHabitIds.has(habit.id)}
+                    streak={streak}
+                    onToggleComplete={(h) => toggleMutation.mutate(h)}
+                    onEdit={openEditModal}
+                    onArchive={handleArchive}
+                  />
+                )
+              })}
+            </AnimatePresence>
           </MotionCard>
         )}
       </div>

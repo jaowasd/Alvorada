@@ -1,7 +1,7 @@
-import { useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Check, GripVertical, MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { Check, GripVertical, Pencil, Trash2 } from 'lucide-react'
+import { ItemMenu } from '@/components/ui/ItemMenu'
 import { cn } from '@/lib/cn'
 import { formatNumber } from '@/lib/number'
 import type { Category, RoutineStep } from '@/types/database'
@@ -23,7 +23,6 @@ export function SortableStepItem({
   onEdit,
   onDelete,
 }: SortableStepItemProps) {
-  const [menuOpen, setMenuOpen] = useState(false)
   const {
     attributes,
     listeners,
@@ -115,40 +114,17 @@ export function SortableStepItem({
           </p>
         )}
       </div>
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setMenuOpen((open) => !open)}
-          aria-label="Mais ações"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-border)]/40"
-        >
-          <MoreVertical size={16} />
-        </button>
-        {menuOpen && (
-          <div className="shadow-card-lg absolute right-0 z-10 mt-1 w-36 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] py-1">
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false)
-                onEdit(step)
-              }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
-            >
-              <Pencil size={14} /> Editar
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false)
-                onDelete(step)
-              }}
-              className="text-error-500 flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
-            >
-              <Trash2 size={14} /> Excluir
-            </button>
-          </div>
-        )}
-      </div>
+      <ItemMenu
+        actions={[
+          { label: 'Editar', icon: Pencil, onClick: () => onEdit(step) },
+          {
+            label: 'Excluir',
+            icon: Trash2,
+            onClick: () => onDelete(step),
+            tone: 'danger',
+          },
+        ]}
+      />
     </div>
   )
 }

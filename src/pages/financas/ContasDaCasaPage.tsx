@@ -204,7 +204,11 @@ export function ContasDaCasaPage() {
 
       <div className="mt-6">
         {isLoading && (
-          <p className="text-sm text-[var(--color-text-muted)]">
+          <p
+            role="status"
+            aria-live="polite"
+            className="text-sm text-[var(--color-text-muted)]"
+          >
             Carregando contas da casa…
           </p>
         )}
@@ -231,26 +235,28 @@ export function ContasDaCasaPage() {
             animate="show"
             className="divide-y divide-[var(--color-border)] overflow-hidden py-0"
           >
-            {recurringList.map((recurring) => {
-              const instances = instancesByRecurring.get(recurring.id) ?? []
-              return (
-                <RecurringTransactionItem
-                  key={recurring.id}
-                  recurring={recurring}
-                  category={
-                    recurring.category_id
-                      ? categoriesById.get(recurring.category_id)
-                      : undefined
-                  }
-                  currentInstance={instances[0] ?? null}
-                  previousInstance={instances[1] ?? null}
-                  onMarkPaid={(t) => markPaidMutation.mutate(t)}
-                  onEdit={openEditModal}
-                  onToggleActive={(r) => toggleActiveMutation.mutate(r)}
-                  onArchive={handleArchive}
-                />
-              )
-            })}
+            <AnimatePresence>
+              {recurringList.map((recurring) => {
+                const instances = instancesByRecurring.get(recurring.id) ?? []
+                return (
+                  <RecurringTransactionItem
+                    key={recurring.id}
+                    recurring={recurring}
+                    category={
+                      recurring.category_id
+                        ? categoriesById.get(recurring.category_id)
+                        : undefined
+                    }
+                    currentInstance={instances[0] ?? null}
+                    previousInstance={instances[1] ?? null}
+                    onMarkPaid={(t) => markPaidMutation.mutate(t)}
+                    onEdit={openEditModal}
+                    onToggleActive={(r) => toggleActiveMutation.mutate(r)}
+                    onArchive={handleArchive}
+                  />
+                )
+              })}
+            </AnimatePresence>
           </MotionCard>
         )}
       </div>

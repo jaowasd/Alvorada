@@ -206,7 +206,11 @@ export function FinancasDashboardPage() {
       </div>
 
       {isLoading && (
-        <p className="mt-8 text-sm text-[var(--color-text-muted)]">
+        <p
+          role="status"
+          aria-live="polite"
+          className="mt-8 text-sm text-[var(--color-text-muted)]"
+        >
           Carregando seu resumo financeiro…
         </p>
       )}

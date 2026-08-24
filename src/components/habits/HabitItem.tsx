@@ -1,6 +1,7 @@
-import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Check, Flame, MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { Check, Flame, Pencil, Trash2 } from 'lucide-react'
+import { Badge } from '@/components/ui/Badge'
+import { ItemMenu } from '@/components/ui/ItemMenu'
 import { cn } from '@/lib/cn'
 import { listItemVariants } from '@/lib/motion'
 import { formatNumber } from '@/lib/number'
@@ -31,11 +32,10 @@ export function HabitItem({
   onEdit,
   onArchive,
 }: HabitItemProps) {
-  const [menuOpen, setMenuOpen] = useState(false)
-
   return (
     <motion.div
       variants={listItemVariants}
+      exit="exit"
       className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-[var(--color-bg)]"
     >
       <label className="relative mt-0.5 inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center">
@@ -116,44 +116,21 @@ export function HabitItem({
         )}
       </div>
       {dueToday && completedToday && (
-        <span className="bg-success-500/10 text-success-600 mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium">
+        <Badge tone="success" className="mt-0.5 shrink-0">
           Concluído
-        </span>
+        </Badge>
       )}
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setMenuOpen((open) => !open)}
-          aria-label="Mais ações"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-border)]/40"
-        >
-          <MoreVertical size={16} />
-        </button>
-        {menuOpen && (
-          <div className="shadow-card-lg absolute right-0 z-10 mt-1 w-36 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] py-1">
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false)
-                onEdit(habit)
-              }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
-            >
-              <Pencil size={14} /> Editar
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false)
-                onArchive(habit)
-              }}
-              className="text-error-500 flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
-            >
-              <Trash2 size={14} /> Arquivar
-            </button>
-          </div>
-        )}
-      </div>
+      <ItemMenu
+        actions={[
+          { label: 'Editar', icon: Pencil, onClick: () => onEdit(habit) },
+          {
+            label: 'Arquivar',
+            icon: Trash2,
+            onClick: () => onArchive(habit),
+            tone: 'danger',
+          },
+        ]}
+      />
     </motion.div>
   )
 }
