@@ -180,6 +180,22 @@ export interface JournalEntry {
   updated_at: string
 }
 
+export interface Reminder {
+  id: string
+  user_id: string
+  task_id: string | null
+  habit_id: string | null
+  routine_step_id: string | null
+  finance_transaction_id: string | null
+  custom_label: string | null
+  remind_at: string
+  message: string | null
+  is_dismissed: boolean
+  dismissed_at: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface FinanceRecurringTransaction {
   id: string
   user_id: string

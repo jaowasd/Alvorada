@@ -15,6 +15,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { Logo } from '@/components/Logo'
+import { ReminderBell } from '@/components/reminders/ReminderBell'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { useDisplayName } from '@/hooks/useProfile'
 import { useAuth } from '@/hooks/useAuth'
@@ -254,20 +255,24 @@ export function AppShell({ children }: { children: ReactNode }) {
                 {headerTitle}
               </h2>
             </div>
-            <NavLink
-              to="/app/perfil"
-              className="flex items-center gap-3 rounded-xl px-2 py-1 transition-colors hover:bg-[var(--color-bg)]"
-            >
-              <span className="text-sm text-[var(--color-text-muted)]">
-                {displayName}
-              </span>
-              <UserAvatar name={displayName} />
-            </NavLink>
+            <div className="flex items-center gap-2">
+              <ReminderBell />
+              <NavLink
+                to="/app/perfil"
+                className="flex items-center gap-3 rounded-xl px-2 py-1 transition-colors hover:bg-[var(--color-bg)]"
+              >
+                <span className="text-sm text-[var(--color-text-muted)]">
+                  {displayName}
+                </span>
+                <UserAvatar name={displayName} />
+              </NavLink>
+            </div>
           </header>
 
           <header className="flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 sm:hidden">
             <Logo size={30} />
             <div className="flex items-center gap-2">
+              <ReminderBell />
               <NavLink to="/app/perfil" aria-label="Perfil">
                 <UserAvatar name={displayName} />
               </NavLink>
