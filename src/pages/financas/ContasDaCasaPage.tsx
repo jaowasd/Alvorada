@@ -9,7 +9,7 @@ import { PageFade } from '@/components/ui/PageFade'
 import { RecurringTransactionForm } from '@/components/financas/RecurringTransactionForm'
 import { RecurringTransactionItem } from '@/components/financas/RecurringTransactionItem'
 import { useAuth } from '@/hooks/useAuth'
-import { staggerContainer } from '@/lib/motion'
+import { fadeIn, staggerContainer } from '@/lib/motion'
 import { fetchFinanceAccounts } from '@/lib/queries/financas/accounts'
 import { fetchFinanceCategories } from '@/lib/queries/financas/categories'
 import {
@@ -215,8 +215,9 @@ export function ContasDaCasaPage() {
         )}
         {!isLoading && !isError && recurringList.length === 0 && (
           <MotionCard
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            variants={fadeIn}
+            initial="hidden"
+            animate="show"
             className="p-8 text-center text-sm text-[var(--color-text-muted)]"
           >
             Nenhuma conta da casa ainda. Cadastre o aluguel, energia ou outra

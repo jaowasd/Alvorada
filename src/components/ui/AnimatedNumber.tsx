@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { animate, motion, useMotionValue, useTransform } from 'framer-motion'
+import { EASE_SMOOTH } from '@/lib/motion'
 import { formatNumber } from '@/lib/number'
 
 interface AnimatedNumberProps {
@@ -25,7 +26,7 @@ export function AnimatedNumber({
   useEffect(() => {
     const controls = animate(motionValue, value, {
       duration,
-      ease: [0.16, 1, 0.3, 1],
+      ease: EASE_SMOOTH,
     })
     previousValue.current = value
     return () => controls.stop()

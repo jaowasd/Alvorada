@@ -15,7 +15,7 @@ import {
   calculateAccountBalanceCents,
   calculateTotalBalanceCents,
 } from '@/lib/financeBalance'
-import { staggerContainer } from '@/lib/motion'
+import { fadeIn, staggerContainer } from '@/lib/motion'
 import { centsToBRL } from '@/lib/money'
 import {
   archiveFinanceAccount,
@@ -204,8 +204,9 @@ export function ContasPage() {
         )}
         {accounts.length === 0 && !isLoading && !isError && (
           <MotionCard
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            variants={fadeIn}
+            initial="hidden"
+            animate="show"
             className="p-8 text-center text-sm text-[var(--color-text-muted)]"
           >
             Nenhuma conta ainda. Crie a primeira para começar a registrar suas

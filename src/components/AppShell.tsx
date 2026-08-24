@@ -16,6 +16,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { useDisplayName } from '@/hooks/useProfile'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/cn'
+import { SPRING_SNAPPY } from '@/lib/motion'
 
 const navItems = [
   { to: '/app', label: 'Meu dia', icon: Sunrise, end: true },
@@ -59,7 +60,7 @@ function SidebarLink({
             <motion.span
               layoutId="sidebar-active-pill"
               className="bg-primary-500/10 absolute inset-0 rounded-xl"
-              transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+              transition={SPRING_SNAPPY}
             />
           )}
           <Icon size={18} className="relative z-10 shrink-0" />
@@ -94,7 +95,7 @@ function SidebarSubLink({
             <motion.span
               layoutId="financas-sub-active-pill"
               className="bg-primary-500/10 absolute inset-0 rounded-lg"
-              transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+              transition={SPRING_SNAPPY}
             />
           )}
           <span className="relative z-10">{label}</span>

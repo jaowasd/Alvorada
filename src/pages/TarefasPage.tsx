@@ -10,7 +10,7 @@ import { TaskForm } from '@/components/tasks/TaskForm'
 import { TaskItem } from '@/components/tasks/TaskItem'
 import { useAuth } from '@/hooks/useAuth'
 import { fetchCategories } from '@/lib/queries/categories'
-import { staggerContainer } from '@/lib/motion'
+import { fadeIn, staggerContainer } from '@/lib/motion'
 import {
   createTask,
   fetchTasks,
@@ -159,8 +159,9 @@ export function TarefasPage() {
         )}
         {tasksQuery.data?.length === 0 && (
           <MotionCard
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            variants={fadeIn}
+            initial="hidden"
+            animate="show"
             className="p-8 text-center text-sm text-[var(--color-text-muted)]"
           >
             Nenhuma tarefa ainda. Crie a primeira para começar.
@@ -170,8 +171,9 @@ export function TarefasPage() {
           tasksQuery.data.length > 0 &&
           filteredTasks.length === 0 && (
             <MotionCard
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              variants={fadeIn}
+              initial="hidden"
+              animate="show"
               className="p-8 text-center text-sm text-[var(--color-text-muted)]"
             >
               Nenhuma tarefa encontrada para "{search}".

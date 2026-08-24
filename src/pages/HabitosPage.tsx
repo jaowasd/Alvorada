@@ -11,7 +11,7 @@ import { HabitItem } from '@/components/habits/HabitItem'
 import { useAuth } from '@/hooks/useAuth'
 import { getLocalDateString } from '@/lib/date'
 import { isHabitDueOnDate } from '@/lib/habits'
-import { staggerContainer } from '@/lib/motion'
+import { fadeIn, staggerContainer } from '@/lib/motion'
 import { calculateHabitStreak } from '@/lib/streaks'
 import { fetchCategories } from '@/lib/queries/categories'
 import {
@@ -230,8 +230,9 @@ export function HabitosPage() {
           !habitsQuery.isLoading &&
           !habitsQuery.isError && (
             <MotionCard
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              variants={fadeIn}
+              initial="hidden"
+              animate="show"
               className="p-8 text-center text-sm text-[var(--color-text-muted)]"
             >
               Nenhum hábito ainda. Crie o primeiro para começar a construir sua
@@ -240,8 +241,9 @@ export function HabitosPage() {
           )}
         {habits.length > 0 && filteredHabits.length === 0 && (
           <MotionCard
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            variants={fadeIn}
+            initial="hidden"
+            animate="show"
             className="p-8 text-center text-sm text-[var(--color-text-muted)]"
           >
             Nenhum hábito encontrado para "{search}".

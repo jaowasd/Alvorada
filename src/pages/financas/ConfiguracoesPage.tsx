@@ -13,7 +13,7 @@ import { FinanceCategoryForm } from '@/components/financas/FinanceCategoryForm'
 import { FinanceCategoryItem } from '@/components/financas/FinanceCategoryItem'
 import { useAuth } from '@/hooks/useAuth'
 import { centsToInputValue } from '@/lib/money'
-import { staggerContainer } from '@/lib/motion'
+import { fadeIn, staggerContainer } from '@/lib/motion'
 import {
   archiveFinanceCategory,
   createFinanceCategory,
@@ -231,8 +231,9 @@ export function ConfiguracoesPage() {
           !categoriesQuery.isError &&
           customCategories.length === 0 && (
             <MotionCard
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              variants={fadeIn}
+              initial="hidden"
+              animate="show"
               className="p-8 text-center text-sm text-[var(--color-text-muted)]"
             >
               Nenhuma categoria personalizada ainda. As categorias do sistema já

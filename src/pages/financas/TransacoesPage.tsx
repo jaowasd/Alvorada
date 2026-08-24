@@ -9,7 +9,7 @@ import { PageFade } from '@/components/ui/PageFade'
 import { TransactionForm } from '@/components/financas/TransactionForm'
 import { TransactionItem } from '@/components/financas/TransactionItem'
 import { useAuth } from '@/hooks/useAuth'
-import { staggerContainer } from '@/lib/motion'
+import { fadeIn, staggerContainer } from '@/lib/motion'
 import { fetchFinanceAccounts } from '@/lib/queries/financas/accounts'
 import { fetchFinanceCategories } from '@/lib/queries/financas/categories'
 import {
@@ -219,8 +219,9 @@ export function TransacoesPage() {
         )}
         {transactionsQuery.data?.length === 0 && (
           <MotionCard
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            variants={fadeIn}
+            initial="hidden"
+            animate="show"
             className="p-8 text-center text-sm text-[var(--color-text-muted)]"
           >
             Nenhuma transação ainda. Crie a primeira para começar.
@@ -230,8 +231,9 @@ export function TransacoesPage() {
           transactionsQuery.data.length > 0 &&
           filteredTransactions.length === 0 && (
             <MotionCard
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              variants={fadeIn}
+              initial="hidden"
+              animate="show"
               className="p-8 text-center text-sm text-[var(--color-text-muted)]"
             >
               Nenhuma transação encontrada para "{search}".

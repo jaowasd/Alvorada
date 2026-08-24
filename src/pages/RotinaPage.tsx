@@ -25,6 +25,7 @@ import { RoutineStepForm } from '@/components/routine/RoutineStepForm'
 import { SortableStepItem } from '@/components/routine/SortableStepItem'
 import { useAuth } from '@/hooks/useAuth'
 import { getLocalDateString } from '@/lib/date'
+import { fadeIn, listItemVariants } from '@/lib/motion'
 import { fetchCategories } from '@/lib/queries/categories'
 import {
   completeRoutineStep,
@@ -226,8 +227,9 @@ export function RotinaPage() {
         )}
         {!isLoading && !isError && steps.length === 0 && (
           <MotionCard
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            variants={fadeIn}
+            initial="hidden"
+            animate="show"
             className="p-8 text-center text-sm text-[var(--color-text-muted)]"
           >
             Sua rotina ainda não tem etapas. Adicione a primeira para começar.
@@ -244,8 +246,9 @@ export function RotinaPage() {
               strategy={verticalListSortingStrategy}
             >
               <MotionCard
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
+                variants={listItemVariants}
+                initial="hidden"
+                animate="show"
                 className="divide-y divide-[var(--color-border)] overflow-hidden py-0"
               >
                 {steps.map((step) => (

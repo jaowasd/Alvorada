@@ -11,7 +11,7 @@ import {
   Trophy,
 } from 'lucide-react'
 import { buttonVariants } from '@/lib/button-variants'
-import { fadeUp, staggerContainer } from '@/lib/motion'
+import { EASE_SMOOTH, fadeUp, staggerContainer } from '@/lib/motion'
 import { Card } from '@/components/ui/Card'
 import { Logo } from '@/components/Logo'
 import { ProgressRing } from '@/components/ui/ProgressRing'
@@ -126,7 +126,7 @@ function LaptopMockup() {
     <motion.div
       initial={{ opacity: 0, x: 24, rotate: 1 }}
       animate={{ opacity: 1, x: 0, rotate: 0 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+      transition={{ duration: 0.6, ease: EASE_SMOOTH, delay: 0.15 }}
       className="w-full max-w-lg"
     >
       <TiltCard tiltStrength={12}>

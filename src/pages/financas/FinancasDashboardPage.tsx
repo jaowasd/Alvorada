@@ -26,7 +26,7 @@ import {
   groupExpensesByCategory,
   sumConfirmedByTypeAndMonth,
 } from '@/lib/financeStats'
-import { staggerContainer } from '@/lib/motion'
+import { EASE_SMOOTH, staggerContainer } from '@/lib/motion'
 import { centsToBRL } from '@/lib/money'
 import {
   createFinanceAccount,
@@ -300,7 +300,7 @@ export function FinancasDashboardPage() {
                               animate={{ width: `${percent}%` }}
                               transition={{
                                 duration: 0.5,
-                                ease: [0.16, 1, 0.3, 1],
+                                ease: EASE_SMOOTH,
                               }}
                               className="h-full rounded-full"
                               style={{

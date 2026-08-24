@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Logo } from '@/components/Logo'
 import { Card } from '@/components/ui/Card'
+import { EASE_SMOOTH } from '@/lib/motion'
 
 interface AuthLayoutProps {
   title: string
@@ -22,7 +23,7 @@ export function AuthLayout({
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.4, ease: EASE_SMOOTH }}
         className="w-full max-w-sm"
       >
         <div className="mb-6 flex justify-center">

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { buttonVariants } from '@/lib/button-variants'
 import { Card } from '@/components/ui/Card'
 import { Logo } from '@/components/Logo'
+import { EASE_SMOOTH } from '@/lib/motion'
 
 export function NotFoundPage() {
   return (
@@ -13,7 +14,7 @@ export function NotFoundPage() {
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.4, ease: EASE_SMOOTH }}
       >
         <Card className="shadow-card-lg max-w-sm p-8 text-center">
           <h1 className="font-heading text-3xl font-bold">404</h1>

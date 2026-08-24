@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { motion } from 'framer-motion'
+import { EASE_SMOOTH } from '@/lib/motion'
 
 export function PageFade({
   children,
@@ -12,7 +13,7 @@ export function PageFade({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.35, ease: EASE_SMOOTH }}
       className={className}
     >
       {children}

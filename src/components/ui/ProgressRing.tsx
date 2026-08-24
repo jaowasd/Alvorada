@@ -1,5 +1,6 @@
 import { useId, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
+import { EASE_SMOOTH } from '@/lib/motion'
 
 interface ProgressRingProps {
   percent: number
@@ -51,7 +52,7 @@ export function ProgressRing({
           strokeDasharray={circumference}
           initial={false}
           animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.8, ease: EASE_SMOOTH }}
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
