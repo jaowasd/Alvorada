@@ -27,6 +27,11 @@ const DashboardPage = lazy(() =>
 const RotinaPage = lazy(() =>
   import('@/pages/RotinaPage').then((m) => ({ default: m.RotinaPage })),
 )
+const CalendarioPage = lazy(() =>
+  import('@/pages/CalendarioPage').then((m) => ({
+    default: m.CalendarioPage,
+  })),
+)
 const HabitosPage = lazy(() =>
   import('@/pages/HabitosPage').then((m) => ({ default: m.HabitosPage })),
 )
@@ -124,6 +129,7 @@ export function AppRouter() {
             }
           >
             <Route index element={<DashboardPage />} />
+            <Route path="calendario" element={<CalendarioPage />} />
             <Route path="rotina" element={<RotinaPage />} />
             <Route path="habitos" element={<HabitosPage />} />
             <Route path="tarefas" element={<TarefasPage />} />

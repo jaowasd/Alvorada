@@ -1,12 +1,15 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
+  Calendar,
   HeartPulse,
   ListChecks,
   LogOut,
+  MoreHorizontal,
   Settings,
   Sunrise,
+  UserRound,
   Wallet,
   Waypoints,
   type LucideIcon,
@@ -17,14 +20,28 @@ import { useDisplayName } from '@/hooks/useProfile'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/cn'
 import { interactiveStates } from '@/lib/interactive-states'
-import { SPRING_SNAPPY } from '@/lib/motion'
+import { EASE_SMOOTH, SPRING_SNAPPY } from '@/lib/motion'
 
 const navItems = [
   { to: '/app', label: 'Meu dia', icon: Sunrise, end: true },
+  { to: '/app/calendario', label: 'Calendário', icon: Calendar, end: false },
   { to: '/app/rotina', label: 'Rotina', icon: Waypoints, end: false },
   { to: '/app/habitos', label: 'Hábitos', icon: HeartPulse, end: false },
   { to: '/app/tarefas', label: 'Tarefas', icon: ListChecks, end: false },
   { to: '/app/financas', label: 'Finanças', icon: Wallet, end: false },
+]
+
+const mobileFixedItems = [
+  { to: '/app', label: 'Meu dia', icon: Sunrise, end: true },
+  { to: '/app/calendario', label: 'Calendário', icon: Calendar, end: false },
+  { to: '/app/financas', label: 'Finanças', icon: Wallet, end: false },
+]
+
+const moreMenuItems = [
+  { to: '/app/rotina', label: 'Rotina', icon: Waypoints },
+  { to: '/app/habitos', label: 'Hábitos', icon: HeartPulse },
+  { to: '/app/tarefas', label: 'Tarefas', icon: ListChecks },
+  { to: '/app/perfil', label: 'Perfil', icon: UserRound },
 ]
 
 const financeSubItems = [
@@ -118,6 +135,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { signOut } = useAuth()
   const location = useLocation()
   const displayName = useDisplayName()
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+
+  const isInMoreSection = moreMenuItems.some((item) =>
+    location.pathname.startsWith(item.to),
+  )
 
   const currentItem =
     navItems.find((item) =>
@@ -277,12 +299,55 @@ export function AppShell({ children }: { children: ReactNode }) {
           <main className="p-4 sm:p-8">{children}</main>
         </div>
 
+        <AnimatePresence>
+          {moreMenuOpen && (
+            <>
+              <motion.div
+                role="presentation"
+                onClick={() => setMoreMenuOpen(false)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-20 bg-black/20 sm:hidden"
+              />
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 12 }}
+                transition={{ duration: 0.18, ease: EASE_SMOOTH }}
+                className="shadow-popover fixed inset-x-0 bottom-16 z-30 rounded-t-2xl border-t border-[var(--color-border)] bg-[var(--color-surface)] p-2 sm:hidden"
+              >
+                {moreMenuItems.map(({ to, label, icon: Icon }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    onClick={() => setMoreMenuOpen(false)}
+                    className={({ isActive }) =>
+                      cn(
+                        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium',
+                        interactiveStates,
+                        isActive
+                          ? 'text-primary-600 bg-primary-500/10'
+                          : 'text-[var(--color-text)] hover:bg-[var(--color-bg)]',
+                      )
+                    }
+                  >
+                    <Icon size={18} />
+                    {label}
+                  </NavLink>
+                ))}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
         <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-[var(--color-border)] bg-[var(--color-surface)] sm:hidden">
-          {navItems.map(({ to, label, icon: Icon, end }) => (
+          {mobileFixedItems.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
+              onClick={() => setMoreMenuOpen(false)}
               className={({ isActive }) =>
                 cn(
                   'flex flex-1 flex-col items-center gap-1 py-2 text-xs font-medium transition-colors',
@@ -296,6 +361,22 @@ export function AppShell({ children }: { children: ReactNode }) {
               {label}
             </NavLink>
           ))}
+          <button
+            type="button"
+            onClick={() => setMoreMenuOpen((open) => !open)}
+            aria-haspopup="true"
+            aria-expanded={moreMenuOpen}
+            className={cn(
+              'flex flex-1 flex-col items-center gap-1 py-2 text-xs font-medium',
+              interactiveStates,
+              isInMoreSection || moreMenuOpen
+                ? 'text-primary-600'
+                : 'text-[var(--color-text-muted)]',
+            )}
+          >
+            <MoreHorizontal size={20} />
+            Mais
+          </button>
         </nav>
       </div>
     </div>
