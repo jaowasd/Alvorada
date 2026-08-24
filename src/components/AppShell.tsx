@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { useDisplayName } from '@/hooks/useProfile'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/cn'
 
@@ -102,17 +103,18 @@ function SidebarSubLink({
   )
 }
 
-function UserAvatar({ email }: { email?: string | null }) {
+function UserAvatar({ name }: { name: string }) {
   return (
     <div className="from-primary-500 to-primary-700 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-xs font-semibold text-white">
-      {email?.[0]?.toUpperCase() ?? '?'}
+      {name?.[0]?.toUpperCase() ?? '?'}
     </div>
   )
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { signOut, user } = useAuth()
+  const { signOut } = useAuth()
   const location = useLocation()
+  const displayName = useDisplayName()
 
   const currentItem =
     navItems.find((item) =>
@@ -129,7 +131,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           : location.pathname.startsWith(item.to),
       ) ?? financeSubItems[0])
     : null
-  const headerTitle = currentFinanceSubItem?.label ?? currentItem.label
+  const isInPerfil = location.pathname.startsWith('/app/perfil')
+  const headerTitle = isInPerfil
+    ? 'Perfil'
+    : (currentFinanceSubItem?.label ?? currentItem.label)
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
@@ -170,12 +175,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="flex flex-col gap-3 border-t border-[var(--color-border)] pt-4">
-            <div className="flex items-center gap-2.5 rounded-xl px-2 py-1.5">
-              <UserAvatar email={user?.email} />
+            <NavLink
+              to="/app/perfil"
+              className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 transition-colors hover:bg-[var(--color-bg)]"
+            >
+              <UserAvatar name={displayName} />
               <span className="min-w-0 flex-1 truncate text-sm font-medium text-[var(--color-text)]">
-                {user?.email}
+                {displayName}
               </span>
-            </div>
+            </NavLink>
             <div className="flex items-center gap-2 px-1">
               <ThemeToggle />
               <button
@@ -200,17 +208,23 @@ export function AppShell({ children }: { children: ReactNode }) {
                 {headerTitle}
               </h2>
             </div>
-            <div className="flex items-center gap-3">
+            <NavLink
+              to="/app/perfil"
+              className="flex items-center gap-3 rounded-xl px-2 py-1 transition-colors hover:bg-[var(--color-bg)]"
+            >
               <span className="text-sm text-[var(--color-text-muted)]">
-                {user?.email}
+                {displayName}
               </span>
-              <UserAvatar email={user?.email} />
-            </div>
+              <UserAvatar name={displayName} />
+            </NavLink>
           </header>
 
           <header className="flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 sm:hidden">
             <Logo size={30} />
             <div className="flex items-center gap-2">
+              <NavLink to="/app/perfil" aria-label="Perfil">
+                <UserAvatar name={displayName} />
+              </NavLink>
               <ThemeToggle />
               <button
                 type="button"

@@ -1,4 +1,5 @@
 import { useId, type ReactNode } from 'react'
+import { motion } from 'framer-motion'
 
 interface ProgressRingProps {
   percent: number
@@ -27,8 +28,8 @@ export function ProgressRing({
       <svg width={size} height={size} className="-rotate-90">
         <defs>
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="var(--color-primary-500)" />
-            <stop offset="100%" stopColor="var(--color-accent-500)" />
+            <stop offset="0%" stopColor="var(--color-primary-400)" />
+            <stop offset="100%" stopColor="var(--color-primary-600)" />
           </linearGradient>
         </defs>
         <circle
@@ -39,7 +40,7 @@ export function ProgressRing({
           stroke="var(--color-border)"
           strokeWidth={strokeWidth}
         />
-        <circle
+        <motion.circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
@@ -48,8 +49,9 @@ export function ProgressRing({
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          style={{ transition: 'stroke-dashoffset 0.4s ease' }}
+          initial={false}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">

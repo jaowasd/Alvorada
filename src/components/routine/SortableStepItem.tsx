@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { Check, GripVertical, MoreVertical, Pencil, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/cn'
+import { formatNumber } from '@/lib/number'
 import type { Category, RoutineStep } from '@/types/database'
 
 interface SortableStepItemProps {
@@ -50,21 +51,39 @@ export function SortableStepItem({
       <button
         type="button"
         aria-label="Arrastar para reordenar"
-        className="mt-1 cursor-grab touch-none text-[var(--color-text-muted)]"
+        className="mt-1 cursor-grab touch-none text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
         {...attributes}
         {...listeners}
       >
         <GripVertical size={16} />
       </button>
-      <input
-        type="checkbox"
-        checked={completed}
-        onChange={() => onToggleComplete(step)}
-        aria-label={
-          completed ? 'Marcar como não concluída' : 'Marcar como concluída'
-        }
-        className="accent-primary-500 mt-1 h-4 w-4"
-      />
+      <label className="relative mt-0.5 inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center">
+        <input
+          type="checkbox"
+          checked={completed}
+          onChange={() => onToggleComplete(step)}
+          aria-label={
+            completed ? 'Marcar como não concluída' : 'Marcar como concluída'
+          }
+          className="peer sr-only"
+        />
+        <span
+          className={cn(
+            'h-[18px] w-[18px] rounded-md border transition-colors',
+            completed
+              ? 'border-primary-600 bg-primary-600'
+              : 'border-[var(--color-border)] bg-[var(--color-surface)]',
+          )}
+        />
+        <Check
+          size={12}
+          strokeWidth={3}
+          className={cn(
+            'pointer-events-none absolute text-white transition-opacity',
+            completed ? 'opacity-100' : 'opacity-0',
+          )}
+        />
+      </label>
       <div className="min-w-0 flex-1">
         <p
           className={cn(
@@ -87,7 +106,7 @@ export function SortableStepItem({
             </span>
           )}
           {step.estimated_duration_minutes && (
-            <span>{step.estimated_duration_minutes} min</span>
+            <span>{formatNumber(step.estimated_duration_minutes)} min</span>
           )}
         </div>
         {step.notes && (
@@ -101,19 +120,19 @@ export function SortableStepItem({
           type="button"
           onClick={() => setMenuOpen((open) => !open)}
           aria-label="Mais ações"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/30"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-border)]/40"
         >
           <MoreVertical size={16} />
         </button>
         {menuOpen && (
-          <div className="absolute right-0 z-10 mt-1 w-36 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] py-1 shadow-sm">
+          <div className="shadow-card-lg absolute right-0 z-10 mt-1 w-36 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] py-1">
             <button
               type="button"
               onClick={() => {
                 setMenuOpen(false)
                 onEdit(step)
               }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-border)]/30"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
             >
               <Pencil size={14} /> Editar
             </button>
@@ -123,7 +142,7 @@ export function SortableStepItem({
                 setMenuOpen(false)
                 onDelete(step)
               }}
-              className="text-error-500 flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-border)]/30"
+              className="text-error-500 flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
             >
               <Trash2 size={14} /> Excluir
             </button>

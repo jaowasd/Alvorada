@@ -1,7 +1,10 @@
 import { useState } from 'react'
-import { MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Check, MoreVertical, Pencil, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { getLocalDateString } from '@/lib/date'
+import { listItemVariants } from '@/lib/motion'
+import { formatNumber } from '@/lib/number'
 import type { Category, Task } from '@/types/database'
 
 interface TaskItemProps {
@@ -28,18 +31,39 @@ export function TaskItem({
   const late = isLate(task)
 
   return (
-    <div className="flex items-start gap-3 px-4 py-3 transition hover:bg-[var(--color-bg)]">
-      <input
-        type="checkbox"
-        checked={task.is_completed}
-        onChange={() => onToggleComplete(task)}
-        aria-label={
-          task.is_completed
-            ? 'Marcar como não concluída'
-            : 'Marcar como concluída'
-        }
-        className="accent-primary-500 mt-1 h-4 w-4"
-      />
+    <motion.div
+      variants={listItemVariants}
+      className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-[var(--color-bg)]"
+    >
+      <label className="relative mt-0.5 inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center">
+        <input
+          type="checkbox"
+          checked={task.is_completed}
+          onChange={() => onToggleComplete(task)}
+          aria-label={
+            task.is_completed
+              ? 'Marcar como não concluída'
+              : 'Marcar como concluída'
+          }
+          className="peer sr-only"
+        />
+        <span
+          className={cn(
+            'h-[18px] w-[18px] rounded-md border transition-colors',
+            task.is_completed
+              ? 'border-primary-600 bg-primary-600'
+              : 'border-[var(--color-border)] bg-[var(--color-surface)]',
+          )}
+        />
+        <Check
+          size={12}
+          strokeWidth={3}
+          className={cn(
+            'pointer-events-none absolute text-white transition-opacity',
+            task.is_completed ? 'opacity-100' : 'opacity-0',
+          )}
+        />
+      </label>
       <div className="min-w-0 flex-1">
         <p
           className={cn(
@@ -63,14 +87,13 @@ export function TaskItem({
           )}
           {task.due_date && (
             <span className={cn(late && 'text-error-500 font-medium')}>
-              {late ? 'Atrasada · ' : ''}
               {new Date(`${task.due_date}T00:00:00`).toLocaleDateString(
                 'pt-BR',
               )}
             </span>
           )}
           {task.estimated_duration_minutes && (
-            <span>{task.estimated_duration_minutes} min</span>
+            <span>{formatNumber(task.estimated_duration_minutes)} min</span>
           )}
         </div>
         {task.notes && (
@@ -79,24 +102,34 @@ export function TaskItem({
           </p>
         )}
       </div>
+      {task.is_completed && (
+        <span className="bg-success-500/10 text-success-600 mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium">
+          Concluída
+        </span>
+      )}
+      {!task.is_completed && late && (
+        <span className="bg-error-500/10 text-error-500 mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium">
+          Atrasada
+        </span>
+      )}
       <div className="relative">
         <button
           type="button"
           onClick={() => setMenuOpen((open) => !open)}
           aria-label="Mais ações"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/30"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-border)]/40"
         >
           <MoreVertical size={16} />
         </button>
         {menuOpen && (
-          <div className="absolute right-0 z-10 mt-1 w-36 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] py-1 shadow-sm">
+          <div className="shadow-card-lg absolute right-0 z-10 mt-1 w-36 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] py-1">
             <button
               type="button"
               onClick={() => {
                 setMenuOpen(false)
                 onEdit(task)
               }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-border)]/30"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
             >
               <Pencil size={14} /> Editar
             </button>
@@ -106,13 +139,13 @@ export function TaskItem({
                 setMenuOpen(false)
                 onDelete(task)
               }}
-              className="text-error-500 flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-border)]/30"
+              className="text-error-500 flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg)]"
             >
               <Trash2 size={14} /> Excluir
             </button>
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   )
 }

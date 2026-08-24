@@ -33,6 +33,9 @@ const HabitosPage = lazy(() =>
 const TarefasPage = lazy(() =>
   import('@/pages/TarefasPage').then((m) => ({ default: m.TarefasPage })),
 )
+const PerfilPage = lazy(() =>
+  import('@/pages/PerfilPage').then((m) => ({ default: m.PerfilPage })),
+)
 const FinancasLayout = lazy(() =>
   import('@/pages/financas/FinancasLayout').then((m) => ({
     default: m.FinancasLayout,
@@ -113,6 +116,7 @@ export function AppRouter() {
             <Route path="rotina" element={<RotinaPage />} />
             <Route path="habitos" element={<HabitosPage />} />
             <Route path="tarefas" element={<TarefasPage />} />
+            <Route path="perfil" element={<PerfilPage />} />
             <Route path="financas" element={<FinancasLayout />}>
               <Route index element={<FinancasDashboardPage />} />
               <Route path="transacoes" element={<TransacoesPage />} />

@@ -1,4 +1,5 @@
 import { forwardRef, type HTMLAttributes } from 'react'
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/cn'
 
 export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
@@ -7,7 +8,7 @@ export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
       <div
         ref={ref}
         className={cn(
-          'shadow-card rounded-2xl border border-[var(--color-border)]/60 bg-[var(--color-surface)]',
+          'shadow-card rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]',
           className,
         )}
         {...props}
@@ -17,3 +18,5 @@ export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
 )
 
 Card.displayName = 'Card'
+
+export const MotionCard = motion.create(Card)

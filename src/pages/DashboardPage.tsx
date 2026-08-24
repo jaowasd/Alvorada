@@ -17,9 +17,11 @@ import { ChecklistItem } from '@/components/dashboard/ChecklistItem'
 import { StatTile } from '@/components/dashboard/StatTile'
 import { StatsBar } from '@/components/dashboard/StatsBar'
 import { useAuth } from '@/hooks/useAuth'
+import { useDisplayName } from '@/hooks/useProfile'
 import { getGreeting, getLocalDateString } from '@/lib/date'
 import { isHabitDueOnDate } from '@/lib/habits'
 import { staggerContainer } from '@/lib/motion'
+import { formatNumber } from '@/lib/number'
 import {
   calculateRoutineStreak,
   getFullyCompletedRoutineDates,
@@ -209,7 +211,7 @@ export function DashboardPage() {
     habitsQuery.isError ||
     tasksQuery.isError
 
-  const firstName = user?.email?.split('@')[0] ?? ''
+  const firstName = useDisplayName()
 
   return (
     <PageFade className="mx-auto max-w-4xl">
@@ -225,7 +227,7 @@ export function DashboardPage() {
             {isLoading
               ? 'Carregando seu dia…'
               : totalDue > 0
-                ? `${totalCompleted} de ${totalDue} concluídos hoje`
+                ? `${formatNumber(totalCompleted)} de ${formatNumber(totalDue)} concluídos hoje`
                 : 'Nada programado para hoje ainda'}
           </p>
         </div>

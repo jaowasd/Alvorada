@@ -15,10 +15,12 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
+import { AnimatePresence } from 'framer-motion'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { MotionCard } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
+import { PageFade } from '@/components/ui/PageFade'
 import { RoutineStepForm } from '@/components/routine/RoutineStepForm'
 import { SortableStepItem } from '@/components/routine/SortableStepItem'
 import { useAuth } from '@/hooks/useAuth'
@@ -192,7 +194,7 @@ export function RotinaPage() {
   const isError = routineQuery.isError || stepsQuery.isError
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <PageFade className="mx-auto max-w-3xl">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-heading text-2xl font-bold text-[var(--color-text)]">
@@ -223,9 +225,13 @@ export function RotinaPage() {
           </p>
         )}
         {!isLoading && !isError && steps.length === 0 && (
-          <Card className="p-8 text-center text-sm text-[var(--color-text-muted)]">
+          <MotionCard
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="p-8 text-center text-sm text-[var(--color-text-muted)]"
+          >
             Sua rotina ainda não tem etapas. Adicione a primeira para começar.
-          </Card>
+          </MotionCard>
         )}
         {steps.length > 0 && (
           <DndContext
@@ -237,7 +243,11 @@ export function RotinaPage() {
               items={steps.map((step) => step.id)}
               strategy={verticalListSortingStrategy}
             >
-              <Card className="divide-y divide-[var(--color-border)] overflow-hidden py-0">
+              <MotionCard
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="divide-y divide-[var(--color-border)] overflow-hidden py-0"
+              >
                 {steps.map((step) => (
                   <SortableStepItem
                     key={step.id}
@@ -253,25 +263,27 @@ export function RotinaPage() {
                     onDelete={handleDelete}
                   />
                 ))}
-              </Card>
+              </MotionCard>
             </SortableContext>
           </DndContext>
         )}
       </div>
 
-      {modalOpen && (
-        <Modal
-          title={editingStep ? 'Editar etapa' : 'Nova etapa'}
-          onClose={closeModal}
-        >
-          <RoutineStepForm
-            categories={categories}
-            initialStep={editingStep ?? undefined}
-            onSubmit={handleFormSubmit}
-            onCancel={closeModal}
-          />
-        </Modal>
-      )}
-    </div>
+      <AnimatePresence>
+        {modalOpen && (
+          <Modal
+            title={editingStep ? 'Editar etapa' : 'Nova etapa'}
+            onClose={closeModal}
+          >
+            <RoutineStepForm
+              categories={categories}
+              initialStep={editingStep ?? undefined}
+              onSubmit={handleFormSubmit}
+              onCancel={closeModal}
+            />
+          </Modal>
+        )}
+      </AnimatePresence>
+    </PageFade>
   )
 }

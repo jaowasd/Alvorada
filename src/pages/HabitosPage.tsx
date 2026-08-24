@@ -1,14 +1,17 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
+import { AnimatePresence } from 'framer-motion'
+import { Plus, Search } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { MotionCard } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
+import { PageFade } from '@/components/ui/PageFade'
 import { HabitForm } from '@/components/habits/HabitForm'
 import { HabitItem } from '@/components/habits/HabitItem'
 import { useAuth } from '@/hooks/useAuth'
 import { getLocalDateString } from '@/lib/date'
 import { isHabitDueOnDate } from '@/lib/habits'
+import { staggerContainer } from '@/lib/motion'
 import { calculateHabitStreak } from '@/lib/streaks'
 import { fetchCategories } from '@/lib/queries/categories'
 import {
@@ -34,6 +37,7 @@ export function HabitosPage() {
   const today = getLocalDateString()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null)
+  const [search, setSearch] = useState('')
 
   const habitsQuery = useQuery({
     queryKey: ['habits', user?.id],
@@ -172,9 +176,17 @@ export function HabitosPage() {
     }
   }
 
+  const filteredHabits = useMemo(
+    () =>
+      habits.filter((habit) =>
+        habit.name.toLowerCase().includes(search.trim().toLowerCase()),
+      ),
+    [habits, search],
+  )
+
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="flex items-center justify-between">
+    <PageFade className="mx-auto max-w-3xl">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold text-[var(--color-text)]">
             Hábitos
@@ -187,6 +199,20 @@ export function HabitosPage() {
         <Button onClick={openCreateModal} className="gap-1.5">
           <Plus size={16} /> Novo
         </Button>
+      </div>
+
+      <div className="relative mt-6 max-w-xs">
+        <Search
+          size={16}
+          className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[var(--color-text-muted)]"
+        />
+        <input
+          type="text"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Buscar hábito…"
+          className="focus:border-primary-500 focus:ring-primary-500/30 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] py-2 pr-3 pl-9 text-sm text-[var(--color-text)] transition outline-none focus:ring-2"
+        />
       </div>
 
       <div className="mt-6">
@@ -203,14 +229,32 @@ export function HabitosPage() {
         {habits.length === 0 &&
           !habitsQuery.isLoading &&
           !habitsQuery.isError && (
-            <Card className="p-8 text-center text-sm text-[var(--color-text-muted)]">
+            <MotionCard
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="p-8 text-center text-sm text-[var(--color-text-muted)]"
+            >
               Nenhum hábito ainda. Crie o primeiro para começar a construir sua
               consistência.
-            </Card>
+            </MotionCard>
           )}
-        {habits.length > 0 && (
-          <Card className="divide-y divide-[var(--color-border)] overflow-hidden py-0">
-            {habits.map((habit) => {
+        {habits.length > 0 && filteredHabits.length === 0 && (
+          <MotionCard
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="p-8 text-center text-sm text-[var(--color-text-muted)]"
+          >
+            Nenhum hábito encontrado para "{search}".
+          </MotionCard>
+        )}
+        {filteredHabits.length > 0 && (
+          <MotionCard
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
+            className="divide-y divide-[var(--color-border)] overflow-hidden py-0"
+          >
+            {filteredHabits.map((habit) => {
               const weekdays = weekdaysByHabit.get(habit.id) ?? []
               const dueToday = isHabitDueOnDate(habit, weekdays)
               const streak = calculateHabitStreak(
@@ -238,26 +282,28 @@ export function HabitosPage() {
                 />
               )
             })}
-          </Card>
+          </MotionCard>
         )}
       </div>
 
-      {modalOpen && (
-        <Modal
-          title={editingHabit ? 'Editar hábito' : 'Novo hábito'}
-          onClose={closeModal}
-        >
-          <HabitForm
-            categories={categories}
-            initialHabit={editingHabit ?? undefined}
-            initialWeekdays={
-              editingHabit ? weekdaysByHabit.get(editingHabit.id) : undefined
-            }
-            onSubmit={handleFormSubmit}
-            onCancel={closeModal}
-          />
-        </Modal>
-      )}
-    </div>
+      <AnimatePresence>
+        {modalOpen && (
+          <Modal
+            title={editingHabit ? 'Editar hábito' : 'Novo hábito'}
+            onClose={closeModal}
+          >
+            <HabitForm
+              categories={categories}
+              initialHabit={editingHabit ?? undefined}
+              initialWeekdays={
+                editingHabit ? weekdaysByHabit.get(editingHabit.id) : undefined
+              }
+              onSubmit={handleFormSubmit}
+              onCancel={closeModal}
+            />
+          </Modal>
+        )}
+      </AnimatePresence>
+    </PageFade>
   )
 }
