@@ -1,9 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Moon, Sun } from 'lucide-react'
-import { useTheme } from '@/hooks/useTheme'
+import { useSyncedTheme } from '@/hooks/useSyncedTheme'
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme } = useSyncedTheme()
 
   const isDark =
     theme === 'dark' ||

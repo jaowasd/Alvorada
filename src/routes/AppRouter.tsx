@@ -36,6 +36,11 @@ const TarefasPage = lazy(() =>
 const PerfilPage = lazy(() =>
   import('@/pages/PerfilPage').then((m) => ({ default: m.PerfilPage })),
 )
+const ConfiguracoesPage = lazy(() =>
+  import('@/pages/ConfiguracoesPage').then((m) => ({
+    default: m.ConfiguracoesPage,
+  })),
+)
 const FinancasLayout = lazy(() =>
   import('@/pages/financas/FinancasLayout').then((m) => ({
     default: m.FinancasLayout,
@@ -61,7 +66,7 @@ const ContasDaCasaPage = lazy(() =>
     default: m.ContasDaCasaPage,
   })),
 )
-const ConfiguracoesPage = lazy(() =>
+const FinanceConfiguracoesPage = lazy(() =>
   import('@/pages/financas/ConfiguracoesPage').then((m) => ({
     default: m.ConfiguracoesPage,
   })),
@@ -117,12 +122,16 @@ export function AppRouter() {
             <Route path="habitos" element={<HabitosPage />} />
             <Route path="tarefas" element={<TarefasPage />} />
             <Route path="perfil" element={<PerfilPage />} />
+            <Route path="configuracoes" element={<ConfiguracoesPage />} />
             <Route path="financas" element={<FinancasLayout />}>
               <Route index element={<FinancasDashboardPage />} />
               <Route path="transacoes" element={<TransacoesPage />} />
               <Route path="contas" element={<ContasPage />} />
               <Route path="contas-da-casa" element={<ContasDaCasaPage />} />
-              <Route path="configuracoes" element={<ConfiguracoesPage />} />
+              <Route
+                path="configuracoes"
+                element={<FinanceConfiguracoesPage />}
+              />
             </Route>
           </Route>
           <Route path="*" element={<NotFoundPage />} />

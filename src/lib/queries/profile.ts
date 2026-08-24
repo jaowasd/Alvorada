@@ -1,8 +1,10 @@
 import { requireSupabase } from '@/lib/supabase'
-import type { Profile } from '@/types/database'
+import type { Profile, ThemePreference } from '@/types/database'
 
 export interface ProfileInput {
   display_name: string | null
+  theme_preference: ThemePreference
+  timezone: string
 }
 
 export async function fetchProfile(userId: string): Promise<Profile> {
@@ -29,4 +31,11 @@ export async function updateProfile(
     .single()
   if (error) throw error
   return data
+}
+
+/** Exclui a própria conta (RPC security definer — ver migration 0008). Cascateia para todos os dados do usuário. */
+export async function deleteOwnAccount(): Promise<void> {
+  const client = requireSupabase()
+  const { error } = await client.rpc('delete_own_account')
+  if (error) throw error
 }

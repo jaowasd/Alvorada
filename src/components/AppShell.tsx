@@ -5,6 +5,7 @@ import {
   HeartPulse,
   ListChecks,
   LogOut,
+  Settings,
   Sunrise,
   Wallet,
   Waypoints,
@@ -132,9 +133,12 @@ export function AppShell({ children }: { children: ReactNode }) {
       ) ?? financeSubItems[0])
     : null
   const isInPerfil = location.pathname.startsWith('/app/perfil')
+  const isInConfiguracoes = location.pathname.startsWith('/app/configuracoes')
   const headerTitle = isInPerfil
     ? 'Perfil'
-    : (currentFinanceSubItem?.label ?? currentItem.label)
+    : isInConfiguracoes
+      ? 'Configurações'
+      : (currentFinanceSubItem?.label ?? currentItem.label)
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
@@ -185,6 +189,20 @@ export function AppShell({ children }: { children: ReactNode }) {
               </span>
             </NavLink>
             <div className="flex items-center gap-2 px-1">
+              <NavLink
+                to="/app/configuracoes"
+                aria-label="Configurações"
+                className={({ isActive }) =>
+                  cn(
+                    'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-[var(--color-bg)]',
+                    isActive
+                      ? 'text-primary-600'
+                      : 'text-[var(--color-text-muted)]',
+                  )
+                }
+              >
+                <Settings size={16} />
+              </NavLink>
               <ThemeToggle />
               <button
                 type="button"
@@ -224,6 +242,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-2">
               <NavLink to="/app/perfil" aria-label="Perfil">
                 <UserAvatar name={displayName} />
+              </NavLink>
+              <NavLink
+                to="/app/configuracoes"
+                aria-label="Configurações"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg)]"
+              >
+                <Settings size={18} />
               </NavLink>
               <ThemeToggle />
               <button
