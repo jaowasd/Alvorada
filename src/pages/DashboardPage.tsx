@@ -14,6 +14,7 @@ import { PageFade } from '@/components/ui/PageFade'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber'
 import { ChecklistItem } from '@/components/dashboard/ChecklistItem'
+import { JournalCard } from '@/components/dashboard/JournalCard'
 import { StatTile } from '@/components/dashboard/StatTile'
 import { StatsBar } from '@/components/dashboard/StatsBar'
 import { useAuth } from '@/hooks/useAuth'
@@ -409,6 +410,8 @@ export function DashboardPage() {
               Tudo pronto por hoje. Bom trabalho!
             </MotionCard>
           )}
+
+          <JournalCard />
         </div>
       )}
     </PageFade>

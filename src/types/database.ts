@@ -168,6 +168,18 @@ export interface FinanceTransaction {
   updated_at: string
 }
 
+export type JournalMood = 'otimo' | 'bom' | 'neutro' | 'dificil' | 'pesado'
+
+export interface JournalEntry {
+  id: string
+  user_id: string
+  entry_date: string
+  mood: JournalMood
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface FinanceRecurringTransaction {
   id: string
   user_id: string
