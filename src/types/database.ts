@@ -204,6 +204,16 @@ export interface GoalProgressEntry {
   created_at: string
 }
 
+export interface FocusSession {
+  id: string
+  user_id: string
+  task_id: string | null
+  label: string | null
+  duration_minutes: number
+  started_at: string
+  completed_at: string | null
+}
+
 export interface Reminder {
   id: string
   user_id: string
