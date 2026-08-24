@@ -1,6 +1,18 @@
 import { requireSupabase } from '@/lib/supabase'
 import type { JournalEntry, JournalMood } from '@/types/database'
 
+export async function fetchAllJournalEntries(
+  userId: string,
+): Promise<JournalEntry[]> {
+  const client = requireSupabase()
+  const { data, error } = await client
+    .from('journal_entries')
+    .select('*')
+    .eq('user_id', userId)
+  if (error) throw error
+  return data
+}
+
 export async function fetchJournalEntryForDate(
   userId: string,
   date: string,

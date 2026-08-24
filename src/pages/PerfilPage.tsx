@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { AchievementsCard } from '@/components/profile/AchievementsCard'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -40,7 +41,7 @@ export function PerfilPage() {
   })
 
   return (
-    <PageFade className="mx-auto max-w-lg">
+    <PageFade className="mx-auto max-w-2xl">
       <div>
         <h1 className="font-heading text-2xl font-bold text-[var(--color-text)]">
           Perfil
@@ -81,6 +82,8 @@ export function PerfilPage() {
           </form>
         )}
       </Card>
+
+      <AchievementsCard />
     </PageFade>
   )
 }
