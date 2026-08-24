@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence } from 'framer-motion'
 import { Check, Copy, Share2 } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
+import { Select } from '@/components/ui/Select'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/cn'
 import { interactiveStates } from '@/lib/interactive-states'
@@ -11,6 +12,13 @@ import {
   fetchSharedRoutineLink,
   revokeSharedRoutineLink,
 } from '@/lib/queries/sharedRoutineLinks'
+
+const EXPIRATION_OPTIONS = [
+  { value: '', label: 'Nunca expira' },
+  { value: '7', label: 'Expira em 7 dias' },
+  { value: '30', label: 'Expira em 30 dias' },
+  { value: '90', label: 'Expira em 90 dias' },
+]
 
 interface ShareRoutineButtonProps {
   routineId: string
@@ -25,6 +33,7 @@ export function ShareRoutineButton({
   const queryClient = useQueryClient()
   const [modalOpen, setModalOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [expiresInDays, setExpiresInDays] = useState('')
 
   const linkQuery = useQuery({
     queryKey: ['sharedRoutineLink', routineId],
@@ -39,7 +48,12 @@ export function ShareRoutineButton({
     })
 
   const createMutation = useMutation({
-    mutationFn: () => createSharedRoutineLink(user!.id, routineId),
+    mutationFn: () =>
+      createSharedRoutineLink(
+        user!.id,
+        routineId,
+        expiresInDays ? Number(expiresInDays) : null,
+      ),
     onSuccess: invalidateLink,
   })
 
@@ -92,21 +106,40 @@ export function ShareRoutineButton({
             )}
 
             {!linkQuery.isLoading && !link && (
-              <button
-                type="button"
-                onClick={() => createMutation.mutate()}
-                disabled={createMutation.isPending}
-                className={cn(
-                  'bg-primary-600 mt-4 rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50',
-                  interactiveStates,
-                )}
-              >
-                Gerar link público
-              </button>
+              <div className="mt-4 flex flex-col gap-3">
+                <Select
+                  label="Expiração"
+                  value={expiresInDays}
+                  onChange={(event) => setExpiresInDays(event.target.value)}
+                >
+                  {EXPIRATION_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+                <button
+                  type="button"
+                  onClick={() => createMutation.mutate()}
+                  disabled={createMutation.isPending}
+                  className={cn(
+                    'bg-primary-600 self-start rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50',
+                    interactiveStates,
+                  )}
+                >
+                  Gerar link público
+                </button>
+              </div>
             )}
 
             {link && (
               <div className="mt-4 flex flex-col gap-3">
+                {link.expires_at && (
+                  <p className="text-xs text-[var(--color-text-muted)]">
+                    Expira em{' '}
+                    {new Date(link.expires_at).toLocaleDateString('pt-BR')}
+                  </p>
+                )}
                 <div className="flex items-center gap-2">
                   <input
                     readOnly

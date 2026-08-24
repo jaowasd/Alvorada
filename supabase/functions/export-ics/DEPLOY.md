@@ -60,3 +60,11 @@ URL; no Apple Calendar: Arquivo → Nova assinatura de calendário).
 Só título + data de vencimento de tarefas não concluídas e transações
 financeiras planejadas do usuário dono do token — nada além disso (sem notas,
 categoria, valores, ou qualquer outro dado da conta).
+
+## Atualização (migration 0018) — expiração de token
+
+A migration `0018_shareable_tokens_expiration.sql` adiciona a coluna
+`expires_at` em `ics_export_tokens`. O código da função já foi atualizado
+para checar essa expiração — depois de aplicar a migration, rode
+`supabase functions deploy export-ics` de novo para publicar essa mudança
+(o deploy anterior não tem a checagem de expiração).

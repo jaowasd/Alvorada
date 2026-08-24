@@ -1,3 +1,4 @@
+import { computeExpiresAt } from '@/lib/date'
 import { requireSupabase } from '@/lib/supabase'
 import type { SharedRoutineLink } from '@/types/database'
 
@@ -18,6 +19,7 @@ export async function fetchSharedRoutineLink(
 export async function createSharedRoutineLink(
   userId: string,
   routineId: string,
+  expiresInDays: number | null = null,
 ): Promise<SharedRoutineLink> {
   const client = requireSupabase()
   const { data, error } = await client
@@ -26,6 +28,7 @@ export async function createSharedRoutineLink(
       user_id: userId,
       routine_id: routineId,
       token: crypto.randomUUID(),
+      expires_at: computeExpiresAt(expiresInDays),
     })
     .select()
     .single()

@@ -13,6 +13,11 @@ import {
   dismissReminder,
   fetchActiveReminders,
 } from '@/lib/queries/reminders'
+import {
+  customReminderFormSchema,
+  REMINDER_LABEL_MAX_LENGTH,
+  REMINDER_MESSAGE_MAX_LENGTH,
+} from '@/lib/validation/reminder'
 
 function formatReminderDate(date: string): string {
   return new Intl.DateTimeFormat('pt-BR', {
@@ -84,7 +89,12 @@ export function ReminderBell() {
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
-    if (!label.trim() || !remindAt) return
+    const result = customReminderFormSchema.safeParse({
+      label,
+      remindAt,
+      message,
+    })
+    if (!result.success) return
     createMutation.mutate()
   }
 
@@ -149,6 +159,7 @@ export function ReminderBell() {
                       placeholder="Ex.: revisão financeira semanal"
                       value={label}
                       onChange={(e) => setLabel(e.target.value)}
+                      maxLength={REMINDER_LABEL_MAX_LENGTH}
                       autoFocus
                     />
                     <Input
@@ -160,6 +171,7 @@ export function ReminderBell() {
                       placeholder="Mensagem (opcional)"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
+                      maxLength={REMINDER_MESSAGE_MAX_LENGTH}
                     />
                     <button
                       type="submit"

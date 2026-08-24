@@ -1,3 +1,4 @@
+import { computeExpiresAt } from '@/lib/date'
 import { requireSupabase } from '@/lib/supabase'
 import type { IcsExportToken } from '@/types/database'
 
@@ -17,12 +18,17 @@ export async function fetchIcsExportToken(
 /** Gera (ou substitui, se já existir) o token de exportação do usuário. */
 export async function generateIcsExportToken(
   userId: string,
+  expiresInDays: number | null = null,
 ): Promise<IcsExportToken> {
   const client = requireSupabase()
   const { data, error } = await client
     .from('ics_export_tokens')
     .upsert(
-      { user_id: userId, token: crypto.randomUUID() },
+      {
+        user_id: userId,
+        token: crypto.randomUUID(),
+        expires_at: computeExpiresAt(expiresInDays),
+      },
       { onConflict: 'user_id' },
     )
     .select()

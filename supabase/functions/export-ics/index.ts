@@ -65,11 +65,14 @@ Deno.serve(async (req) => {
 
   const { data: tokenRow } = await client
     .from('ics_export_tokens')
-    .select('user_id')
+    .select('user_id, expires_at')
     .eq('token', token)
     .maybeSingle()
 
-  if (!tokenRow) {
+  const isExpired =
+    tokenRow?.expires_at && new Date(tokenRow.expires_at) < new Date()
+
+  if (!tokenRow || isExpired) {
     return new Response('Link inválido ou revogado.', { status: 404 })
   }
 

@@ -211,6 +211,7 @@ export interface IcsExportToken {
   id: string
   user_id: string
   token: string
+  expires_at: string | null
   created_at: string
 }
 
@@ -219,6 +220,7 @@ export interface SharedRoutineLink {
   routine_id: string
   user_id: string
   token: string
+  expires_at: string | null
   created_at: string
   revoked_at: string | null
 }

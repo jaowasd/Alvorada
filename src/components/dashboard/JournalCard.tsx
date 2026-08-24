@@ -12,6 +12,10 @@ import {
   fetchJournalEntryForDate,
   upsertJournalEntry,
 } from '@/lib/queries/journal'
+import {
+  JOURNAL_NOTES_MAX_LENGTH,
+  journalNotesSchema,
+} from '@/lib/validation/journal'
 import type { JournalMood } from '@/types/database'
 
 const MOOD_OPTIONS: {
@@ -61,15 +65,22 @@ export function JournalCard() {
 
   const handleMoodClick = (nextMood: JournalMood) => {
     setMood(nextMood)
+    const notesResult = journalNotesSchema.safeParse(notes.trim())
+    if (!notesResult.success) return
     saveMutation.mutate({
       mood: nextMood,
-      notes: notes.trim() ? notes.trim() : null,
+      notes: notesResult.data ? notesResult.data : null,
     })
   }
 
   const handleNotesBlur = () => {
     if (!mood) return
-    saveMutation.mutate({ mood, notes: notes.trim() ? notes.trim() : null })
+    const notesResult = journalNotesSchema.safeParse(notes.trim())
+    if (!notesResult.success) return
+    saveMutation.mutate({
+      mood,
+      notes: notesResult.data ? notesResult.data : null,
+    })
   }
 
   return (
@@ -109,6 +120,7 @@ export function JournalCard() {
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
             onBlur={handleNotesBlur}
+            maxLength={JOURNAL_NOTES_MAX_LENGTH}
           />
         </motion.div>
       )}

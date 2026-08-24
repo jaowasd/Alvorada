@@ -50,6 +50,13 @@ const THEME_OPTIONS: { value: Theme; label: string; icon: typeof Sun }[] = [
   { value: 'system', label: 'Sistema', icon: Laptop },
 ]
 
+const EXPIRATION_OPTIONS = [
+  { value: '', label: 'Nunca expira' },
+  { value: '7', label: 'Expira em 7 dias' },
+  { value: '30', label: 'Expira em 30 dias' },
+  { value: '90', label: 'Expira em 90 dias' },
+]
+
 export function ConfiguracoesPage() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
@@ -64,6 +71,7 @@ export function ConfiguracoesPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [icsCopied, setIcsCopied] = useState(false)
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
+  const [icsExpiresInDays, setIcsExpiresInDays] = useState('')
 
   const icsTokenQuery = useQuery({
     queryKey: ['icsExportToken', user?.id],
@@ -75,7 +83,11 @@ export function ConfiguracoesPage() {
     queryClient.invalidateQueries({ queryKey: ['icsExportToken', user?.id] })
 
   const generateIcsMutation = useMutation({
-    mutationFn: () => generateIcsExportToken(user!.id),
+    mutationFn: () =>
+      generateIcsExportToken(
+        user!.id,
+        icsExpiresInDays ? Number(icsExpiresInDays) : null,
+      ),
     onSuccess: invalidateIcsToken,
   })
 
@@ -283,18 +295,39 @@ export function ConfiguracoesPage() {
         </p>
 
         {!icsTokenQuery.isLoading && !icsTokenQuery.data && (
-          <Button
-            variant="secondary"
-            onClick={() => generateIcsMutation.mutate()}
-            disabled={generateIcsMutation.isPending}
-            className="mt-4"
-          >
-            Gerar link de assinatura
-          </Button>
+          <div className="mt-4 flex max-w-xs flex-col gap-3">
+            <Select
+              label="Expiração"
+              value={icsExpiresInDays}
+              onChange={(event) => setIcsExpiresInDays(event.target.value)}
+            >
+              {EXPIRATION_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+            <Button
+              variant="secondary"
+              onClick={() => generateIcsMutation.mutate()}
+              disabled={generateIcsMutation.isPending}
+              className="self-start"
+            >
+              Gerar link de assinatura
+            </Button>
+          </div>
         )}
 
         {icsTokenQuery.data && (
           <div className="mt-4 flex flex-col gap-3">
+            {icsTokenQuery.data.expires_at && (
+              <p className="text-xs text-[var(--color-text-muted)]">
+                Expira em{' '}
+                {new Date(icsTokenQuery.data.expires_at).toLocaleDateString(
+                  'pt-BR',
+                )}
+              </p>
+            )}
             <div className="flex items-center gap-2">
               <input
                 readOnly
