@@ -291,12 +291,12 @@ export function CalendarioPage() {
 
       {!isLoading && !isError && (
         <div className="mt-6">
-          <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-[var(--color-text-muted)]">
+          <div className="grid grid-cols-7 gap-0.5 text-center text-[11px] font-semibold text-[var(--color-text-muted)] sm:gap-1">
             {WEEKDAY_HEADERS.map((label) => (
               <span key={label}>{label}</span>
             ))}
           </div>
-          <div className="mt-1 grid grid-cols-7 gap-1">
+          <div className="mt-1 grid grid-cols-7 gap-0.5 sm:gap-1">
             {grid.map((cell) => {
               const percent = cell.inCurrentMonth
                 ? (percentByDate.get(cell.date) ?? null)
@@ -318,7 +318,7 @@ export function CalendarioPage() {
                   type="button"
                   onClick={() => setSelectedDate(cell.date)}
                   className={cn(
-                    'flex aspect-square flex-col items-start gap-1 rounded-lg border p-1.5 text-left',
+                    'flex aspect-square flex-col items-start gap-1 rounded-lg border p-1 text-left sm:p-1.5',
                     interactiveStates,
                     percentToBgClass(percent),
                     cell.isToday

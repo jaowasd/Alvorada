@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   AlertTriangle,
+  CalendarClock,
+  PieChart,
   Plus,
   Scale,
   TrendingDown,
@@ -11,6 +13,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, MotionCard } from '@/components/ui/Card'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Modal } from '@/components/ui/Modal'
 import { PageFade } from '@/components/ui/PageFade'
 import { AccountForm } from '@/components/financas/AccountForm'
@@ -274,9 +277,10 @@ export function FinancasDashboardPage() {
                 Gastos por categoria
               </h2>
               {categoryBreakdown.length === 0 ? (
-                <Card className="p-6 text-center text-sm text-[var(--color-text-muted)]">
-                  Nenhuma despesa confirmada este mês ainda.
-                </Card>
+                <EmptyState
+                  icon={PieChart}
+                  title="Nenhuma despesa confirmada este mês ainda"
+                />
               ) : (
                 <Card className="p-4">
                   <div className="flex flex-col gap-3">
@@ -325,9 +329,10 @@ export function FinancasDashboardPage() {
                 Contas a vencer
               </h2>
               {upcoming.length === 0 ? (
-                <Card className="p-6 text-center text-sm text-[var(--color-text-muted)]">
-                  Nada previsto por enquanto.
-                </Card>
+                <EmptyState
+                  icon={CalendarClock}
+                  title="Nada previsto por enquanto"
+                />
               ) : (
                 <MotionCard
                   variants={staggerContainer}

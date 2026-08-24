@@ -1,15 +1,17 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence } from 'framer-motion'
-import { Plus } from 'lucide-react'
+import { Home, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { MotionCard } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Modal } from '@/components/ui/Modal'
 import { PageFade } from '@/components/ui/PageFade'
 import { RecurringTransactionForm } from '@/components/financas/RecurringTransactionForm'
 import { RecurringTransactionItem } from '@/components/financas/RecurringTransactionItem'
 import { useAuth } from '@/hooks/useAuth'
-import { fadeIn, staggerContainer } from '@/lib/motion'
+import { staggerContainer } from '@/lib/motion'
 import { fetchFinanceAccounts } from '@/lib/queries/financas/accounts'
 import { fetchFinanceCategories } from '@/lib/queries/financas/categories'
 import {
@@ -44,6 +46,8 @@ export function ContasDaCasaPage() {
   const queryClient = useQueryClient()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingRecurring, setEditingRecurring] =
+    useState<FinanceRecurringTransaction | null>(null)
+  const [archiveTarget, setArchiveTarget] =
     useState<FinanceRecurringTransaction | null>(null)
 
   // A geração das instâncias faltantes acontece uma vez em FinancasLayout,
@@ -155,14 +159,14 @@ export function ContasDaCasaPage() {
     setModalOpen(true)
   }
 
-  const handleArchive = (recurring: FinanceRecurringTransaction) => {
-    if (
-      window.confirm(
-        `Arquivar a conta da casa "${recurring.description}"? O histórico já gerado não é apagado.`,
-      )
-    ) {
-      archiveMutation.mutate(recurring)
-    }
+  const handleArchive = (recurring: FinanceRecurringTransaction) =>
+    setArchiveTarget(recurring)
+
+  const handleConfirmArchive = () => {
+    if (!archiveTarget) return
+    archiveMutation.mutate(archiveTarget, {
+      onSuccess: () => setArchiveTarget(null),
+    })
   }
 
   const handleFormSubmit = async (values: RecurringTransactionFormValues) => {
@@ -218,15 +222,16 @@ export function ContasDaCasaPage() {
           </p>
         )}
         {!isLoading && !isError && recurringList.length === 0 && (
-          <MotionCard
-            variants={fadeIn}
-            initial="hidden"
-            animate="show"
-            className="p-8 text-center text-sm text-[var(--color-text-muted)]"
-          >
-            Nenhuma conta da casa ainda. Cadastre o aluguel, energia ou outra
-            conta recorrente para começar.
-          </MotionCard>
+          <EmptyState
+            icon={Home}
+            title="Nenhuma conta da casa ainda"
+            description="Cadastre o aluguel, energia ou outra conta recorrente para começar."
+            action={
+              accounts.length > 0
+                ? { label: 'Nova conta da casa', onClick: openCreateModal }
+                : undefined
+            }
+          />
         )}
         {recurringList.length > 0 && (
           <MotionCard
@@ -277,6 +282,19 @@ export function ContasDaCasaPage() {
               onCancel={closeModal}
             />
           </Modal>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {archiveTarget && (
+          <ConfirmDialog
+            title="Arquivar conta da casa"
+            message={`Arquivar a conta da casa "${archiveTarget.description}"? O histórico já gerado não é apagado.`}
+            confirmLabel="Arquivar"
+            isPending={archiveMutation.isPending}
+            onConfirm={handleConfirmArchive}
+            onClose={() => setArchiveTarget(null)}
+          />
         )}
       </AnimatePresence>
     </PageFade>

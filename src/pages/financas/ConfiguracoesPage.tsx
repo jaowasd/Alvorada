@@ -3,9 +3,11 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence } from 'framer-motion'
-import { Plus } from 'lucide-react'
+import { Plus, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, MotionCard } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { PageFade } from '@/components/ui/PageFade'
@@ -13,7 +15,7 @@ import { FinanceCategoryForm } from '@/components/financas/FinanceCategoryForm'
 import { FinanceCategoryItem } from '@/components/financas/FinanceCategoryItem'
 import { useAuth } from '@/hooks/useAuth'
 import { centsToInputValue } from '@/lib/money'
-import { fadeIn, staggerContainer } from '@/lib/motion'
+import { staggerContainer } from '@/lib/motion'
 import {
   archiveFinanceCategory,
   createFinanceCategory,
@@ -43,6 +45,9 @@ export function ConfiguracoesPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingCategory, setEditingCategory] =
     useState<FinanceCategory | null>(null)
+  const [archiveTarget, setArchiveTarget] = useState<FinanceCategory | null>(
+    null,
+  )
 
   const settingsQuery = useQuery({
     queryKey: ['financeSettings', user?.id],
@@ -144,10 +149,14 @@ export function ConfiguracoesPage() {
     setModalOpen(true)
   }
 
-  const handleArchiveCategory = (category: FinanceCategory) => {
-    if (window.confirm(`Arquivar a categoria "${category.name}"?`)) {
-      archiveCategoryMutation.mutate(category)
-    }
+  const handleArchiveCategory = (category: FinanceCategory) =>
+    setArchiveTarget(category)
+
+  const handleConfirmArchiveCategory = () => {
+    if (!archiveTarget) return
+    archiveCategoryMutation.mutate(archiveTarget, {
+      onSuccess: () => setArchiveTarget(null),
+    })
   }
 
   const handleCategoryFormSubmit = async (
@@ -234,15 +243,12 @@ export function ConfiguracoesPage() {
         {!categoriesQuery.isLoading &&
           !categoriesQuery.isError &&
           customCategories.length === 0 && (
-            <MotionCard
-              variants={fadeIn}
-              initial="hidden"
-              animate="show"
-              className="p-8 text-center text-sm text-[var(--color-text-muted)]"
-            >
-              Nenhuma categoria personalizada ainda. As categorias do sistema já
-              cobrem os casos mais comuns.
-            </MotionCard>
+            <EmptyState
+              icon={Tag}
+              title="Nenhuma categoria personalizada ainda"
+              description="As categorias do sistema já cobrem os casos mais comuns."
+              action={{ label: 'Nova categoria', onClick: openCreateModal }}
+            />
           )}
         {customCategories.length > 0 && (
           <MotionCard
@@ -277,6 +283,19 @@ export function ConfiguracoesPage() {
               onCancel={closeModal}
             />
           </Modal>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {archiveTarget && (
+          <ConfirmDialog
+            title="Arquivar categoria"
+            message={`Arquivar a categoria "${archiveTarget.name}"?`}
+            confirmLabel="Arquivar"
+            isPending={archiveCategoryMutation.isPending}
+            onConfirm={handleConfirmArchiveCategory}
+            onClose={() => setArchiveTarget(null)}
+          />
         )}
       </AnimatePresence>
     </PageFade>

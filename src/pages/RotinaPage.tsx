@@ -16,17 +16,20 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { AnimatePresence } from 'framer-motion'
-import { Plus } from 'lucide-react'
+import { Plus, Waypoints } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { MotionCard } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Modal } from '@/components/ui/Modal'
 import { PageFade } from '@/components/ui/PageFade'
 import { RoutineStepForm } from '@/components/routine/RoutineStepForm'
 import { ShareRoutineButton } from '@/components/routine/ShareRoutineButton'
 import { SortableStepItem } from '@/components/routine/SortableStepItem'
 import { useAuth } from '@/hooks/useAuth'
+import { useInlineFeedback } from '@/hooks/useInlineFeedback'
 import { getLocalDateString } from '@/lib/date'
-import { fadeIn, listItemVariants } from '@/lib/motion'
+import { listItemVariants } from '@/lib/motion'
 import { fetchCategories } from '@/lib/queries/categories'
 import {
   completeRoutineStep,
@@ -54,6 +57,8 @@ export function RotinaPage() {
   const today = getLocalDateString()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingStep, setEditingStep] = useState<RoutineStep | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<RoutineStep | null>(null)
+  const { message: feedback, show: showFeedback } = useInlineFeedback()
 
   const routineQuery = useQuery({
     queryKey: ['routine', user?.id],
@@ -106,6 +111,7 @@ export function RotinaPage() {
     onSuccess: () => {
       invalidateSteps()
       closeModal()
+      showFeedback('Etapa criada.')
     },
   })
 
@@ -120,6 +126,7 @@ export function RotinaPage() {
     onSuccess: () => {
       invalidateSteps()
       closeModal()
+      showFeedback('Etapa atualizada.')
     },
   })
 
@@ -178,10 +185,13 @@ export function RotinaPage() {
     setModalOpen(true)
   }
 
-  const handleDelete = (step: RoutineStep) => {
-    if (window.confirm(`Remover a etapa "${step.title}" da rotina?`)) {
-      deleteMutation.mutate(step)
-    }
+  const handleDelete = (step: RoutineStep) => setDeleteTarget(step)
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return
+    deleteMutation.mutate(deleteTarget, {
+      onSuccess: () => setDeleteTarget(null),
+    })
   }
 
   const handleFormSubmit = async (values: RoutineStepFormValues) => {
@@ -221,6 +231,16 @@ export function RotinaPage() {
         </div>
       </div>
 
+      {feedback && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="text-success-600 mt-2 text-xs"
+        >
+          {feedback}
+        </p>
+      )}
+
       <div className="mt-6">
         {isLoading && (
           <p
@@ -237,14 +257,12 @@ export function RotinaPage() {
           </p>
         )}
         {!isLoading && !isError && steps.length === 0 && (
-          <MotionCard
-            variants={fadeIn}
-            initial="hidden"
-            animate="show"
-            className="p-8 text-center text-sm text-[var(--color-text-muted)]"
-          >
-            Sua rotina ainda não tem etapas. Adicione a primeira para começar.
-          </MotionCard>
+          <EmptyState
+            icon={Waypoints}
+            title="Sua rotina ainda não tem etapas"
+            description="Adicione a primeira para começar."
+            action={{ label: 'Adicionar etapa', onClick: openCreateModal }}
+          />
         )}
         {steps.length > 0 && (
           <DndContext
@@ -296,6 +314,19 @@ export function RotinaPage() {
               onCancel={closeModal}
             />
           </Modal>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {deleteTarget && (
+          <ConfirmDialog
+            title="Remover etapa"
+            message={`Remover a etapa "${deleteTarget.title}" da rotina?`}
+            confirmLabel="Remover"
+            isPending={deleteMutation.isPending}
+            onConfirm={handleConfirmDelete}
+            onClose={() => setDeleteTarget(null)}
+          />
         )}
       </AnimatePresence>
     </PageFade>

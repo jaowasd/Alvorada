@@ -5,6 +5,7 @@ export interface ProfileInput {
   display_name: string | null
   theme_preference: ThemePreference
   timezone: string
+  onboarding_completed_at: string | null
 }
 
 export async function fetchProfile(userId: string): Promise<Profile> {

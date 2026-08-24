@@ -1,6 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { AnimatePresence } from 'framer-motion'
 import {
   AlertTriangle,
   CheckCircle2,
@@ -18,12 +19,14 @@ import { FocusLauncherCard } from '@/components/dashboard/FocusLauncherCard'
 import { JournalCard } from '@/components/dashboard/JournalCard'
 import { StatTile } from '@/components/dashboard/StatTile'
 import { StatsBar } from '@/components/dashboard/StatsBar'
+import { OnboardingModal } from '@/components/onboarding/OnboardingModal'
 import { useAuth } from '@/hooks/useAuth'
-import { useDisplayName } from '@/hooks/useProfile'
+import { useDisplayName, useProfile } from '@/hooks/useProfile'
 import { getGreeting, getLocalDateString } from '@/lib/date'
 import { isHabitDueOnDate } from '@/lib/habits'
 import { staggerContainer } from '@/lib/motion'
 import { formatNumber } from '@/lib/number'
+import { updateProfile } from '@/lib/queries/profile'
 import {
   calculateRoutineStreak,
   getFullyCompletedRoutineDates,
@@ -54,6 +57,8 @@ export function DashboardPage() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const today = getLocalDateString()
+  const profileQuery = useProfile()
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false)
 
   const routineQuery = useQuery({
     queryKey: ['routine', user?.id],
@@ -190,6 +195,26 @@ export function DashboardPage() {
       queryClient.invalidateQueries({ queryKey: ['tasks', user?.id] })
     },
   })
+
+  const completeOnboardingMutation = useMutation({
+    mutationFn: () =>
+      updateProfile(user!.id, {
+        onboarding_completed_at: new Date().toISOString(),
+      }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['profile', user?.id], data)
+    },
+  })
+
+  const showOnboarding =
+    !onboardingDismissed &&
+    !!profileQuery.data &&
+    !profileQuery.data.onboarding_completed_at
+
+  const handleFinishOnboarding = () => {
+    setOnboardingDismissed(true)
+    completeOnboardingMutation.mutate()
+  }
 
   const completedHabitsDueToday = dueHabitsToday.filter((h) =>
     completedHabitIds.has(h.id),
@@ -417,6 +442,12 @@ export function DashboardPage() {
           <JournalCard />
         </div>
       )}
+
+      <AnimatePresence>
+        {showOnboarding && (
+          <OnboardingModal onFinish={handleFinishOnboarding} />
+        )}
+      </AnimatePresence>
     </PageFade>
   )
 }

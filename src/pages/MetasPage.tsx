@@ -1,18 +1,20 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence } from 'framer-motion'
-import { Plus } from 'lucide-react'
+import { Plus, Target } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { MotionCard } from '@/components/ui/Card'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Modal } from '@/components/ui/Modal'
 import { PageFade } from '@/components/ui/PageFade'
 import { GoalForm } from '@/components/goals/GoalForm'
 import { GoalItem } from '@/components/goals/GoalItem'
 import { useAuth } from '@/hooks/useAuth'
+import { useInlineFeedback } from '@/hooks/useInlineFeedback'
 import { cn } from '@/lib/cn'
 import { getLocalDateString } from '@/lib/date'
 import { interactiveStates } from '@/lib/interactive-states'
-import { fadeIn, staggerContainer } from '@/lib/motion'
+import { staggerContainer } from '@/lib/motion'
 import {
   addProgressEntry,
   createGoal,
@@ -40,6 +42,7 @@ export function MetasPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
   const [statusFilter, setStatusFilter] = useState<GoalStatus>('active')
+  const { message: feedback, show: showFeedback } = useInlineFeedback()
 
   const goalsQuery = useQuery({
     queryKey: ['goals', user?.id],
@@ -68,6 +71,7 @@ export function MetasPage() {
     onSuccess: () => {
       invalidateGoals()
       closeModal()
+      showFeedback('Meta criada.')
     },
   })
 
@@ -77,6 +81,7 @@ export function MetasPage() {
     onSuccess: () => {
       invalidateGoals()
       closeModal()
+      showFeedback('Meta atualizada.')
     },
   })
 
@@ -148,6 +153,16 @@ export function MetasPage() {
         </Button>
       </div>
 
+      {feedback && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="text-success-600 mt-2 text-xs"
+        >
+          {feedback}
+        </p>
+      )}
+
       <div className="mt-6 flex gap-1">
         {STATUS_TABS.map((tab) => (
           <button
@@ -185,18 +200,21 @@ export function MetasPage() {
         {!goalsQuery.isLoading &&
           !goalsQuery.isError &&
           filteredGoals.length === 0 && (
-            <MotionCard
-              variants={fadeIn}
-              initial="hidden"
-              animate="show"
-              className="p-8 text-center text-sm text-[var(--color-text-muted)]"
-            >
-              {statusFilter === 'active'
-                ? 'Nenhuma meta ativa ainda. Crie a primeira.'
-                : statusFilter === 'completed'
-                  ? 'Nenhuma meta concluída ainda.'
-                  : 'Nenhuma meta arquivada.'}
-            </MotionCard>
+            <EmptyState
+              icon={Target}
+              title={
+                statusFilter === 'active'
+                  ? 'Nenhuma meta ativa ainda'
+                  : statusFilter === 'completed'
+                    ? 'Nenhuma meta concluída ainda'
+                    : 'Nenhuma meta arquivada'
+              }
+              action={
+                statusFilter === 'active'
+                  ? { label: 'Criar meta', onClick: openCreateModal }
+                  : undefined
+              }
+            />
           )}
         {filteredGoals.length > 0 && (
           <MotionCard

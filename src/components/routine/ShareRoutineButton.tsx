@@ -82,7 +82,11 @@ export function ShareRoutineButton({
             </p>
 
             {linkQuery.isLoading && (
-              <p className="mt-4 text-sm text-[var(--color-text-muted)]">
+              <p
+                role="status"
+                aria-live="polite"
+                className="mt-4 text-sm text-[var(--color-text-muted)]"
+              >
                 Carregando…
               </p>
             )}

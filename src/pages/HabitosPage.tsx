@@ -1,17 +1,20 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence } from 'framer-motion'
-import { Plus, Search } from 'lucide-react'
+import { HeartPulse, Plus, Search } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { MotionCard } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Modal } from '@/components/ui/Modal'
 import { PageFade } from '@/components/ui/PageFade'
 import { HabitForm } from '@/components/habits/HabitForm'
 import { HabitItem } from '@/components/habits/HabitItem'
 import { useAuth } from '@/hooks/useAuth'
+import { useInlineFeedback } from '@/hooks/useInlineFeedback'
 import { getLocalDateString } from '@/lib/date'
 import { isHabitDueOnDate } from '@/lib/habits'
-import { fadeIn, staggerContainer } from '@/lib/motion'
+import { staggerContainer } from '@/lib/motion'
 import { calculateHabitStreak } from '@/lib/streaks'
 import { fetchCategories } from '@/lib/queries/categories'
 import {
@@ -37,7 +40,9 @@ export function HabitosPage() {
   const today = getLocalDateString()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null)
+  const [archiveTarget, setArchiveTarget] = useState<Habit | null>(null)
   const [search, setSearch] = useState('')
+  const { message: feedback, show: showFeedback } = useInlineFeedback()
 
   const habitsQuery = useQuery({
     queryKey: ['habits', user?.id],
@@ -121,6 +126,7 @@ export function HabitosPage() {
       invalidateHabits()
       invalidateFrequencyDays()
       closeModal()
+      showFeedback('Hábito criado.')
     },
   })
 
@@ -131,6 +137,7 @@ export function HabitosPage() {
       invalidateHabits()
       invalidateFrequencyDays()
       closeModal()
+      showFeedback('Hábito atualizado.')
     },
   })
 
@@ -162,10 +169,13 @@ export function HabitosPage() {
     setModalOpen(true)
   }
 
-  const handleArchive = (habit: Habit) => {
-    if (window.confirm(`Arquivar o hábito "${habit.name}"?`)) {
-      archiveMutation.mutate(habit)
-    }
+  const handleArchive = (habit: Habit) => setArchiveTarget(habit)
+
+  const handleConfirmArchive = () => {
+    if (!archiveTarget) return
+    archiveMutation.mutate(archiveTarget, {
+      onSuccess: () => setArchiveTarget(null),
+    })
   }
 
   const handleFormSubmit = async (values: HabitFormValues) => {
@@ -201,6 +211,16 @@ export function HabitosPage() {
         </Button>
       </div>
 
+      {feedback && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="text-success-600 mt-2 text-xs"
+        >
+          {feedback}
+        </p>
+      )}
+
       <div className="relative mt-6 max-w-xs">
         <Search
           size={16}
@@ -233,25 +253,18 @@ export function HabitosPage() {
         {habits.length === 0 &&
           !habitsQuery.isLoading &&
           !habitsQuery.isError && (
-            <MotionCard
-              variants={fadeIn}
-              initial="hidden"
-              animate="show"
-              className="p-8 text-center text-sm text-[var(--color-text-muted)]"
-            >
-              Nenhum hábito ainda. Crie o primeiro para começar a construir sua
-              consistência.
-            </MotionCard>
+            <EmptyState
+              icon={HeartPulse}
+              title="Nenhum hábito ainda"
+              description="Crie o primeiro para começar a construir sua consistência."
+              action={{ label: 'Criar hábito', onClick: openCreateModal }}
+            />
           )}
         {habits.length > 0 && filteredHabits.length === 0 && (
-          <MotionCard
-            variants={fadeIn}
-            initial="hidden"
-            animate="show"
-            className="p-8 text-center text-sm text-[var(--color-text-muted)]"
-          >
-            Nenhum hábito encontrado para "{search}".
-          </MotionCard>
+          <EmptyState
+            icon={Search}
+            title={`Nenhum hábito encontrado para "${search}"`}
+          />
         )}
         {filteredHabits.length > 0 && (
           <MotionCard
@@ -310,6 +323,19 @@ export function HabitosPage() {
               onCancel={closeModal}
             />
           </Modal>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {archiveTarget && (
+          <ConfirmDialog
+            title="Arquivar hábito"
+            message={`Arquivar o hábito "${archiveTarget.name}"?`}
+            confirmLabel="Arquivar"
+            isPending={archiveMutation.isPending}
+            onConfirm={handleConfirmArchive}
+            onClose={() => setArchiveTarget(null)}
+          />
         )}
       </AnimatePresence>
     </PageFade>

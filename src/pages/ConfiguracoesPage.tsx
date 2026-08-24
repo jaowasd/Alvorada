@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { AnimatePresence } from 'framer-motion'
 import {
   AlertTriangle,
   Check,
@@ -15,6 +16,7 @@ import {
 import { PremiumBadge } from '@/components/premium/PremiumBadge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Input } from '@/components/ui/Input'
 import { PageFade } from '@/components/ui/PageFade'
 import { Select } from '@/components/ui/Select'
@@ -61,6 +63,7 @@ export function ConfiguracoesPage() {
   const [confirmEmail, setConfirmEmail] = useState('')
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [icsCopied, setIcsCopied] = useState(false)
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
 
   const icsTokenQuery = useQuery({
     queryKey: ['icsExportToken', user?.id],
@@ -144,14 +147,14 @@ export function ConfiguracoesPage() {
 
   const handleDelete = () => {
     if (!canDelete) return
-    if (
-      window.confirm(
-        'Isso vai apagar permanentemente sua conta e todos os seus dados (rotina, hábitos, tarefas, finanças). Não é possível desfazer. Continuar?',
-      )
-    ) {
-      setDeleteError(null)
-      deleteAccountMutation.mutate()
-    }
+    setConfirmDeleteOpen(true)
+  }
+
+  const handleConfirmDelete = () => {
+    setDeleteError(null)
+    deleteAccountMutation.mutate(undefined, {
+      onSuccess: () => setConfirmDeleteOpen(false),
+    })
   }
 
   return (
@@ -362,6 +365,19 @@ export function ConfiguracoesPage() {
           </Button>
         </div>
       </Card>
+
+      <AnimatePresence>
+        {confirmDeleteOpen && (
+          <ConfirmDialog
+            title="Excluir conta"
+            message="Isso vai apagar permanentemente sua conta e todos os seus dados (rotina, hábitos, tarefas, finanças). Não é possível desfazer."
+            confirmLabel="Excluir minha conta"
+            isPending={deleteAccountMutation.isPending}
+            onConfirm={handleConfirmDelete}
+            onClose={() => setConfirmDeleteOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </PageFade>
   )
 }

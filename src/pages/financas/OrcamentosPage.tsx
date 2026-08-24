@@ -1,18 +1,19 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Plus } from 'lucide-react'
+import { PiggyBank, Plus } from 'lucide-react'
 import { BudgetForm } from '@/components/financas/BudgetForm'
 import { BudgetItem } from '@/components/financas/BudgetItem'
 import { PremiumGate } from '@/components/premium/PremiumGate'
 import { Button } from '@/components/ui/Button'
-import { MotionCard } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Modal } from '@/components/ui/Modal'
 import { PageFade } from '@/components/ui/PageFade'
 import { useAuth } from '@/hooks/useAuth'
 import { getLocalDateString } from '@/lib/date'
 import { getMonthKey, groupExpensesByCategory } from '@/lib/financeStats'
-import { fadeIn, staggerContainer } from '@/lib/motion'
+import { staggerContainer } from '@/lib/motion'
 import {
   archiveFinanceBudget,
   createFinanceBudget,
@@ -40,6 +41,7 @@ function OrcamentosContent() {
   const queryClient = useQueryClient()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingBudget, setEditingBudget] = useState<FinanceBudget | null>(null)
+  const [archiveTarget, setArchiveTarget] = useState<FinanceBudget | null>(null)
 
   const budgetsQuery = useQuery({
     queryKey: ['financeBudgets', user?.id],
@@ -127,15 +129,13 @@ function OrcamentosContent() {
     setModalOpen(true)
   }
 
-  const handleArchive = (budget: FinanceBudget) => {
-    const category = categoriesById.get(budget.category_id)
-    if (
-      window.confirm(
-        `Excluir o orçamento de "${category?.name ?? 'categoria'}"?`,
-      )
-    ) {
-      archiveMutation.mutate(budget)
-    }
+  const handleArchive = (budget: FinanceBudget) => setArchiveTarget(budget)
+
+  const handleConfirmArchive = () => {
+    if (!archiveTarget) return
+    archiveMutation.mutate(archiveTarget, {
+      onSuccess: () => setArchiveTarget(null),
+    })
   }
 
   const handleFormSubmit = async (values: BudgetFormValues) => {
@@ -182,15 +182,16 @@ function OrcamentosContent() {
           </p>
         )}
         {budgets.length === 0 && !isLoading && !isError && (
-          <MotionCard
-            variants={fadeIn}
-            initial="hidden"
-            animate="show"
-            className="p-8 text-center text-sm text-[var(--color-text-muted)]"
-          >
-            Nenhum orçamento ainda. Defina um limite mensal por categoria para
-            acompanhar seus gastos.
-          </MotionCard>
+          <EmptyState
+            icon={PiggyBank}
+            title="Nenhum orçamento ainda"
+            description="Defina um limite mensal por categoria para acompanhar seus gastos."
+            action={
+              availableCategories.length > 0
+                ? { label: 'Novo orçamento', onClick: openCreateModal }
+                : undefined
+            }
+          />
         )}
         {budgets.length > 0 && (
           <motion.div
@@ -230,6 +231,19 @@ function OrcamentosContent() {
               onCancel={closeModal}
             />
           </Modal>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {archiveTarget && (
+          <ConfirmDialog
+            title="Excluir orçamento"
+            message={`Excluir o orçamento de "${categoriesById.get(archiveTarget.category_id)?.name ?? 'categoria'}"?`}
+            confirmLabel="Excluir"
+            isPending={archiveMutation.isPending}
+            onConfirm={handleConfirmArchive}
+            onClose={() => setArchiveTarget(null)}
+          />
         )}
       </AnimatePresence>
     </div>

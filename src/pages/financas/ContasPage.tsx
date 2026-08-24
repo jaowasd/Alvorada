@@ -1,21 +1,24 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowRightLeft, Plus } from 'lucide-react'
+import { ArrowRightLeft, Plus, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Card, MotionCard } from '@/components/ui/Card'
+import { Card } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Modal } from '@/components/ui/Modal'
 import { PageFade } from '@/components/ui/PageFade'
 import { AccountForm } from '@/components/financas/AccountForm'
 import { AccountItem } from '@/components/financas/AccountItem'
 import { TransactionForm } from '@/components/financas/TransactionForm'
 import { useAuth } from '@/hooks/useAuth'
+import { useInlineFeedback } from '@/hooks/useInlineFeedback'
 import { cn } from '@/lib/cn'
 import {
   calculateAccountBalanceCents,
   calculateTotalBalanceCents,
 } from '@/lib/financeBalance'
-import { fadeIn, staggerContainer } from '@/lib/motion'
+import { staggerContainer } from '@/lib/motion'
 import { centsToBRL } from '@/lib/money'
 import {
   archiveFinanceAccount,
@@ -52,6 +55,10 @@ export function ContasPage() {
     null,
   )
   const [transferModalOpen, setTransferModalOpen] = useState(false)
+  const [archiveTarget, setArchiveTarget] = useState<FinanceAccount | null>(
+    null,
+  )
+  const { message: feedback, show: showFeedback } = useInlineFeedback()
 
   const accountsQuery = useQuery({
     queryKey: ['financeAccounts', user?.id],
@@ -91,6 +98,7 @@ export function ContasPage() {
     onSuccess: () => {
       invalidateAccounts()
       closeModal()
+      showFeedback('Conta criada.')
     },
   })
 
@@ -100,6 +108,7 @@ export function ContasPage() {
     onSuccess: () => {
       invalidateAccounts()
       closeModal()
+      showFeedback('Conta atualizada.')
     },
   })
 
@@ -132,10 +141,13 @@ export function ContasPage() {
     setModalOpen(true)
   }
 
-  const handleArchive = (account: FinanceAccount) => {
-    if (window.confirm(`Arquivar a conta "${account.name}"?`)) {
-      archiveMutation.mutate(account)
-    }
+  const handleArchive = (account: FinanceAccount) => setArchiveTarget(account)
+
+  const handleConfirmArchive = () => {
+    if (!archiveTarget) return
+    archiveMutation.mutate(archiveTarget, {
+      onSuccess: () => setArchiveTarget(null),
+    })
   }
 
   const handleFormSubmit = async (values: AccountFormValues) => {
@@ -175,6 +187,16 @@ export function ContasPage() {
         </div>
       </div>
 
+      {feedback && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="text-success-600 mt-2 text-xs"
+        >
+          {feedback}
+        </p>
+      )}
+
       {!isLoading && !isError && (
         <Card className="mt-6 p-4">
           <p className="text-xs font-medium text-[var(--color-text-muted)]">
@@ -207,15 +229,12 @@ export function ContasPage() {
           </p>
         )}
         {accounts.length === 0 && !isLoading && !isError && (
-          <MotionCard
-            variants={fadeIn}
-            initial="hidden"
-            animate="show"
-            className="p-8 text-center text-sm text-[var(--color-text-muted)]"
-          >
-            Nenhuma conta ainda. Crie a primeira para começar a registrar suas
-            finanças.
-          </MotionCard>
+          <EmptyState
+            icon={Wallet}
+            title="Nenhuma conta ainda"
+            description="Crie a primeira para começar a registrar suas finanças."
+            action={{ label: 'Criar conta', onClick: openCreateModal }}
+          />
         )}
         {accounts.length > 0 && (
           <motion.div
@@ -274,6 +293,19 @@ export function ContasPage() {
               onCancel={() => setTransferModalOpen(false)}
             />
           </Modal>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {archiveTarget && (
+          <ConfirmDialog
+            title="Arquivar conta"
+            message={`Arquivar a conta "${archiveTarget.name}"?`}
+            confirmLabel="Arquivar"
+            isPending={archiveMutation.isPending}
+            onConfirm={handleConfirmArchive}
+            onClose={() => setArchiveTarget(null)}
+          />
         )}
       </AnimatePresence>
     </PageFade>

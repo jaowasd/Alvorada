@@ -1,15 +1,18 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence } from 'framer-motion'
-import { Plus, Search } from 'lucide-react'
+import { Plus, Receipt, Search } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { MotionCard } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Modal } from '@/components/ui/Modal'
 import { PageFade } from '@/components/ui/PageFade'
 import { TransactionForm } from '@/components/financas/TransactionForm'
 import { TransactionItem } from '@/components/financas/TransactionItem'
 import { useAuth } from '@/hooks/useAuth'
-import { fadeIn, staggerContainer } from '@/lib/motion'
+import { useInlineFeedback } from '@/hooks/useInlineFeedback'
+import { staggerContainer } from '@/lib/motion'
 import { fetchFinanceAccounts } from '@/lib/queries/financas/accounts'
 import { fetchFinanceCategories } from '@/lib/queries/financas/categories'
 import {
@@ -40,7 +43,11 @@ export function TransacoesPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingTransaction, setEditingTransaction] =
     useState<FinanceTransaction | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<FinanceTransaction | null>(
+    null,
+  )
   const [search, setSearch] = useState('')
+  const { message: feedback, show: showFeedback } = useInlineFeedback()
 
   const transactionsQuery = useQuery({
     queryKey: ['financeTransactions', user?.id],
@@ -90,6 +97,7 @@ export function TransacoesPage() {
     onSuccess: () => {
       invalidate()
       closeModal()
+      showFeedback('Transação criada.')
     },
   })
 
@@ -104,6 +112,7 @@ export function TransacoesPage() {
     onSuccess: () => {
       invalidate()
       closeModal()
+      showFeedback('Transação atualizada.')
     },
   })
 
@@ -149,10 +158,14 @@ export function TransacoesPage() {
     setModalOpen(true)
   }
 
-  const handleDelete = (transaction: FinanceTransaction) => {
-    if (window.confirm(`Excluir a transação "${transaction.description}"?`)) {
-      deleteMutation.mutate(transaction)
-    }
+  const handleDelete = (transaction: FinanceTransaction) =>
+    setDeleteTarget(transaction)
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return
+    deleteMutation.mutate(deleteTarget, {
+      onSuccess: () => setDeleteTarget(null),
+    })
   }
 
   const handleFormSubmit = async (values: TransactionFormValues) => {
@@ -185,6 +198,16 @@ export function TransacoesPage() {
           <Plus size={16} /> Nova
         </Button>
       </div>
+
+      {feedback && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="text-success-600 mt-2 text-xs"
+        >
+          {feedback}
+        </p>
+      )}
 
       {accounts.length === 0 && !accountsQuery.isLoading && (
         <p className="mt-4 text-sm text-[var(--color-text-muted)]">
@@ -222,26 +245,24 @@ export function TransacoesPage() {
           </p>
         )}
         {transactionsQuery.data?.length === 0 && (
-          <MotionCard
-            variants={fadeIn}
-            initial="hidden"
-            animate="show"
-            className="p-8 text-center text-sm text-[var(--color-text-muted)]"
-          >
-            Nenhuma transação ainda. Crie a primeira para começar.
-          </MotionCard>
+          <EmptyState
+            icon={Receipt}
+            title="Nenhuma transação ainda"
+            description="Crie a primeira para começar."
+            action={
+              accounts.length > 0
+                ? { label: 'Nova transação', onClick: openCreateModal }
+                : undefined
+            }
+          />
         )}
         {transactionsQuery.data &&
           transactionsQuery.data.length > 0 &&
           filteredTransactions.length === 0 && (
-            <MotionCard
-              variants={fadeIn}
-              initial="hidden"
-              animate="show"
-              className="p-8 text-center text-sm text-[var(--color-text-muted)]"
-            >
-              Nenhuma transação encontrada para "{search}".
-            </MotionCard>
+            <EmptyState
+              icon={Search}
+              title={`Nenhuma transação encontrada para "${search}"`}
+            />
           )}
         {filteredTransactions.length > 0 && (
           <MotionCard
@@ -292,6 +313,19 @@ export function TransacoesPage() {
               onCancel={closeModal}
             />
           </Modal>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {deleteTarget && (
+          <ConfirmDialog
+            title="Excluir transação"
+            message={`Excluir a transação "${deleteTarget.description}"?`}
+            confirmLabel="Excluir"
+            isPending={deleteMutation.isPending}
+            onConfirm={handleConfirmDelete}
+            onClose={() => setDeleteTarget(null)}
+          />
         )}
       </AnimatePresence>
     </PageFade>

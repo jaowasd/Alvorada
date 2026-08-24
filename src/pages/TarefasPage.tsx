@@ -1,16 +1,19 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence } from 'framer-motion'
-import { Plus, Search } from 'lucide-react'
+import { ListChecks, Plus, Search } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { MotionCard } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Modal } from '@/components/ui/Modal'
 import { PageFade } from '@/components/ui/PageFade'
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { TaskItem } from '@/components/tasks/TaskItem'
 import { useAuth } from '@/hooks/useAuth'
+import { useInlineFeedback } from '@/hooks/useInlineFeedback'
 import { fetchCategories } from '@/lib/queries/categories'
-import { fadeIn, staggerContainer } from '@/lib/motion'
+import { staggerContainer } from '@/lib/motion'
 import {
   createTask,
   fetchTasks,
@@ -28,7 +31,9 @@ export function TarefasPage() {
   const queryClient = useQueryClient()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Task | null>(null)
   const [search, setSearch] = useState('')
+  const { message: feedback, show: showFeedback } = useInlineFeedback()
 
   const tasksQuery = useQuery({
     queryKey: ['tasks', user?.id],
@@ -65,6 +70,7 @@ export function TarefasPage() {
     onSuccess: () => {
       invalidateTasks()
       closeModal()
+      showFeedback('Tarefa criada.')
     },
   })
 
@@ -74,6 +80,7 @@ export function TarefasPage() {
     onSuccess: () => {
       invalidateTasks()
       closeModal()
+      showFeedback('Tarefa atualizada.')
     },
   })
 
@@ -102,10 +109,13 @@ export function TarefasPage() {
     setModalOpen(true)
   }
 
-  const handleDelete = (task: Task) => {
-    if (window.confirm(`Excluir a tarefa "${task.title}"?`)) {
-      deleteMutation.mutate(task)
-    }
+  const handleDelete = (task: Task) => setDeleteTarget(task)
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return
+    deleteMutation.mutate(deleteTarget, {
+      onSuccess: () => setDeleteTarget(null),
+    })
   }
 
   const handleFormSubmit = async (values: TaskFormValues) => {
@@ -131,6 +141,16 @@ export function TarefasPage() {
           <Plus size={16} /> Nova
         </Button>
       </div>
+
+      {feedback && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="text-success-600 mt-2 text-xs"
+        >
+          {feedback}
+        </p>
+      )}
 
       <div className="relative mt-6 max-w-xs">
         <Search
@@ -162,26 +182,20 @@ export function TarefasPage() {
           </p>
         )}
         {tasksQuery.data?.length === 0 && (
-          <MotionCard
-            variants={fadeIn}
-            initial="hidden"
-            animate="show"
-            className="p-8 text-center text-sm text-[var(--color-text-muted)]"
-          >
-            Nenhuma tarefa ainda. Crie a primeira para começar.
-          </MotionCard>
+          <EmptyState
+            icon={ListChecks}
+            title="Nenhuma tarefa ainda"
+            description="Crie a primeira para começar."
+            action={{ label: 'Criar tarefa', onClick: openCreateModal }}
+          />
         )}
         {tasksQuery.data &&
           tasksQuery.data.length > 0 &&
           filteredTasks.length === 0 && (
-            <MotionCard
-              variants={fadeIn}
-              initial="hidden"
-              animate="show"
-              className="p-8 text-center text-sm text-[var(--color-text-muted)]"
-            >
-              Nenhuma tarefa encontrada para "{search}".
-            </MotionCard>
+            <EmptyState
+              icon={Search}
+              title={`Nenhuma tarefa encontrada para "${search}"`}
+            />
           )}
         {filteredTasks.length > 0 && (
           <MotionCard
@@ -223,6 +237,19 @@ export function TarefasPage() {
               onCancel={closeModal}
             />
           </Modal>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {deleteTarget && (
+          <ConfirmDialog
+            title="Excluir tarefa"
+            message={`Excluir a tarefa "${deleteTarget.title}"?`}
+            confirmLabel="Excluir"
+            isPending={deleteMutation.isPending}
+            onConfirm={handleConfirmDelete}
+            onClose={() => setDeleteTarget(null)}
+          />
         )}
       </AnimatePresence>
     </PageFade>
