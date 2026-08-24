@@ -249,6 +249,16 @@ export interface Reminder {
   updated_at: string
 }
 
+export interface FinanceBudget {
+  id: string
+  user_id: string
+  category_id: string
+  limit_cents: number
+  archived_at: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface FinanceRecurringTransaction {
   id: string
   user_id: string

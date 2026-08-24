@@ -32,6 +32,11 @@ const CalendarioPage = lazy(() =>
     default: m.CalendarioPage,
   })),
 )
+const EstatisticasPage = lazy(() =>
+  import('@/pages/EstatisticasPage').then((m) => ({
+    default: m.EstatisticasPage,
+  })),
+)
 const HabitosPage = lazy(() =>
   import('@/pages/HabitosPage').then((m) => ({ default: m.HabitosPage })),
 )
@@ -65,6 +70,16 @@ const FinancasDashboardPage = lazy(() =>
 const TransacoesPage = lazy(() =>
   import('@/pages/financas/TransacoesPage').then((m) => ({
     default: m.TransacoesPage,
+  })),
+)
+const RelatoriosPage = lazy(() =>
+  import('@/pages/financas/RelatoriosPage').then((m) => ({
+    default: m.RelatoriosPage,
+  })),
+)
+const OrcamentosPage = lazy(() =>
+  import('@/pages/financas/OrcamentosPage').then((m) => ({
+    default: m.OrcamentosPage,
   })),
 )
 const ContasPage = lazy(() =>
@@ -142,6 +157,7 @@ export function AppRouter() {
           >
             <Route index element={<DashboardPage />} />
             <Route path="calendario" element={<CalendarioPage />} />
+            <Route path="estatisticas" element={<EstatisticasPage />} />
             <Route path="rotina" element={<RotinaPage />} />
             <Route path="habitos" element={<HabitosPage />} />
             <Route path="metas" element={<MetasPage />} />
@@ -154,6 +170,8 @@ export function AppRouter() {
               <Route path="transacoes" element={<TransacoesPage />} />
               <Route path="contas" element={<ContasPage />} />
               <Route path="contas-da-casa" element={<ContasDaCasaPage />} />
+              <Route path="relatorios" element={<RelatoriosPage />} />
+              <Route path="orcamentos" element={<OrcamentosPage />} />
               <Route
                 path="configuracoes"
                 element={<FinanceConfiguracoesPage />}

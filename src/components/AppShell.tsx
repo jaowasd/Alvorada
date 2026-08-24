@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
+  BarChart3,
   Calendar,
   Crown,
   HeartPulse,
@@ -27,9 +28,24 @@ import { cn } from '@/lib/cn'
 import { interactiveStates } from '@/lib/interactive-states'
 import { EASE_SMOOTH, SPRING_SNAPPY } from '@/lib/motion'
 
-const navItems = [
+interface NavItem {
+  to: string
+  label: string
+  icon: LucideIcon
+  end?: boolean
+  premium?: boolean
+}
+
+const navItems: NavItem[] = [
   { to: '/app', label: 'Meu dia', icon: Sunrise, end: true },
   { to: '/app/calendario', label: 'Calendário', icon: Calendar, end: false },
+  {
+    to: '/app/estatisticas',
+    label: 'Estatísticas',
+    icon: BarChart3,
+    end: false,
+    premium: true,
+  },
   { to: '/app/rotina', label: 'Rotina', icon: Waypoints, end: false },
   { to: '/app/habitos', label: 'Hábitos', icon: HeartPulse, end: false },
   { to: '/app/metas', label: 'Metas', icon: Target, end: false },
@@ -37,13 +53,19 @@ const navItems = [
   { to: '/app/financas', label: 'Finanças', icon: Wallet, end: false },
 ]
 
-const mobileFixedItems = [
+const mobileFixedItems: NavItem[] = [
   { to: '/app', label: 'Meu dia', icon: Sunrise, end: true },
   { to: '/app/calendario', label: 'Calendário', icon: Calendar, end: false },
   { to: '/app/financas', label: 'Finanças', icon: Wallet, end: false },
 ]
 
-const moreMenuItems = [
+const moreMenuItems: NavItem[] = [
+  {
+    to: '/app/estatisticas',
+    label: 'Estatísticas',
+    icon: BarChart3,
+    premium: true,
+  },
   { to: '/app/rotina', label: 'Rotina', icon: Waypoints },
   { to: '/app/habitos', label: 'Hábitos', icon: HeartPulse },
   { to: '/app/metas', label: 'Metas', icon: Target },
@@ -52,11 +74,30 @@ const moreMenuItems = [
   { to: '/app/premium', label: 'Meu plano', icon: Crown },
 ]
 
-const financeSubItems = [
+interface SubNavItem {
+  to: string
+  label: string
+  end?: boolean
+  premium?: boolean
+}
+
+const financeSubItems: SubNavItem[] = [
   { to: '/app/financas', label: 'Visão geral', end: true },
   { to: '/app/financas/transacoes', label: 'Transações', end: false },
   { to: '/app/financas/contas', label: 'Contas', end: false },
   { to: '/app/financas/contas-da-casa', label: 'Contas da casa', end: false },
+  {
+    to: '/app/financas/orcamentos',
+    label: 'Orçamentos',
+    end: false,
+    premium: true,
+  },
+  {
+    to: '/app/financas/relatorios',
+    label: 'Relatórios',
+    end: false,
+    premium: true,
+  },
   { to: '/app/financas/configuracoes', label: 'Configurações', end: false },
 ]
 
@@ -65,11 +106,15 @@ function SidebarLink({
   end,
   label,
   icon: Icon,
+  premium,
+  showPremiumLock,
 }: {
   to: string
   end?: boolean
   label: string
   icon: LucideIcon
+  premium?: boolean
+  showPremiumLock?: boolean
 }) {
   return (
     <NavLink to={to} end={end} className="relative">
@@ -90,7 +135,13 @@ function SidebarLink({
             />
           )}
           <Icon size={18} className="relative z-10 shrink-0" />
-          <span className="relative z-10 truncate">{label}</span>
+          <span className="relative z-10 flex-1 truncate">{label}</span>
+          {premium && showPremiumLock && (
+            <Crown
+              size={13}
+              className="text-primary-600 relative z-10 shrink-0"
+            />
+          )}
         </span>
       )}
     </NavLink>
@@ -101,17 +152,21 @@ function SidebarSubLink({
   to,
   end,
   label,
+  premium,
+  showPremiumLock,
 }: {
   to: string
   end?: boolean
   label: string
+  premium?: boolean
+  showPremiumLock?: boolean
 }) {
   return (
     <NavLink to={to} end={end} className="relative block">
       {({ isActive }) => (
         <span
           className={cn(
-            'relative block rounded-lg px-3 py-2 text-sm transition-colors',
+            'relative flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
             isActive
               ? 'text-primary-600 font-medium'
               : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]',
@@ -125,6 +180,12 @@ function SidebarSubLink({
             />
           )}
           <span className="relative z-10">{label}</span>
+          {premium && showPremiumLock && (
+            <Crown
+              size={12}
+              className="text-primary-600 relative z-10 shrink-0"
+            />
+          )}
         </span>
       )}
     </NavLink>
@@ -166,6 +227,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const location = useLocation()
   const displayName = useDisplayName()
   const plan = usePlan()
+  const isPremium = plan === 'premium'
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
 
   const isInMoreSection = moreMenuItems.some((item) =>
@@ -212,7 +274,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </p>
             {navItems.map((item) => (
               <div key={item.to}>
-                <SidebarLink {...item} />
+                <SidebarLink {...item} showPremiumLock={!isPremium} />
                 {item.to === '/app/financas' && (
                   <AnimatePresence initial={false}>
                     {isInFinancas && (
@@ -225,7 +287,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                       >
                         <div className="flex flex-col gap-0.5 py-1 pl-8">
                           {financeSubItems.map((subItem) => (
-                            <SidebarSubLink key={subItem.to} {...subItem} />
+                            <SidebarSubLink
+                              key={subItem.to}
+                              {...subItem}
+                              showPremiumLock={!isPremium}
+                            />
                           ))}
                         </div>
                       </motion.div>
@@ -356,7 +422,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 transition={{ duration: 0.18, ease: EASE_SMOOTH }}
                 className="shadow-popover fixed inset-x-0 bottom-16 z-30 rounded-t-2xl border-t border-[var(--color-border)] bg-[var(--color-surface)] p-2 sm:hidden"
               >
-                {moreMenuItems.map(({ to, label, icon: Icon }) => (
+                {moreMenuItems.map(({ to, label, icon: Icon, premium }) => (
                   <NavLink
                     key={to}
                     to={to}
@@ -372,7 +438,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                     }
                   >
                     <Icon size={18} />
-                    {label}
+                    <span className="flex-1">{label}</span>
+                    {premium && !isPremium && (
+                      <Crown size={13} className="text-primary-600" />
+                    )}
                   </NavLink>
                 ))}
               </motion.div>

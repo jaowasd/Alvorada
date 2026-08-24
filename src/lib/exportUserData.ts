@@ -65,11 +65,13 @@ export async function buildUserDataExport(userId: string) {
   }
 }
 
-/** Dispara o download de um objeto como arquivo .json no navegador. */
-export function downloadJson(data: unknown, filename: string): void {
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: 'application/json',
-  })
+/** Dispara o download de um conteúdo de texto como arquivo no navegador. */
+export function downloadFile(
+  content: string,
+  filename: string,
+  mimeType: string,
+): void {
+  const blob = new Blob([content], { type: mimeType })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
@@ -78,4 +80,9 @@ export function downloadJson(data: unknown, filename: string): void {
   link.click()
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
+}
+
+/** Dispara o download de um objeto como arquivo .json no navegador. */
+export function downloadJson(data: unknown, filename: string): void {
+  downloadFile(JSON.stringify(data, null, 2), filename, 'application/json')
 }
