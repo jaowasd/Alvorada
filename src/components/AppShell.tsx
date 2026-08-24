@@ -9,6 +9,7 @@ import {
   MoreHorizontal,
   Settings,
   Sunrise,
+  Target,
   UserRound,
   Wallet,
   Waypoints,
@@ -28,6 +29,7 @@ const navItems = [
   { to: '/app/calendario', label: 'Calendário', icon: Calendar, end: false },
   { to: '/app/rotina', label: 'Rotina', icon: Waypoints, end: false },
   { to: '/app/habitos', label: 'Hábitos', icon: HeartPulse, end: false },
+  { to: '/app/metas', label: 'Metas', icon: Target, end: false },
   { to: '/app/tarefas', label: 'Tarefas', icon: ListChecks, end: false },
   { to: '/app/financas', label: 'Finanças', icon: Wallet, end: false },
 ]
@@ -41,6 +43,7 @@ const mobileFixedItems = [
 const moreMenuItems = [
   { to: '/app/rotina', label: 'Rotina', icon: Waypoints },
   { to: '/app/habitos', label: 'Hábitos', icon: HeartPulse },
+  { to: '/app/metas', label: 'Metas', icon: Target },
   { to: '/app/tarefas', label: 'Tarefas', icon: ListChecks },
   { to: '/app/perfil', label: 'Perfil', icon: UserRound },
 ]

@@ -180,6 +180,30 @@ export interface JournalEntry {
   updated_at: string
 }
 
+export type GoalStatus = 'active' | 'completed' | 'archived'
+
+export interface Goal {
+  id: string
+  user_id: string
+  name: string
+  target_value: number | null
+  unit: string | null
+  deadline_date: string | null
+  status: GoalStatus
+  created_at: string
+  updated_at: string
+}
+
+export interface GoalProgressEntry {
+  id: string
+  goal_id: string
+  user_id: string
+  amount: number
+  entry_date: string
+  notes: string | null
+  created_at: string
+}
+
 export interface Reminder {
   id: string
   user_id: string

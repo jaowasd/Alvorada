@@ -38,6 +38,9 @@ const HabitosPage = lazy(() =>
 const TarefasPage = lazy(() =>
   import('@/pages/TarefasPage').then((m) => ({ default: m.TarefasPage })),
 )
+const MetasPage = lazy(() =>
+  import('@/pages/MetasPage').then((m) => ({ default: m.MetasPage })),
+)
 const PerfilPage = lazy(() =>
   import('@/pages/PerfilPage').then((m) => ({ default: m.PerfilPage })),
 )
@@ -132,6 +135,7 @@ export function AppRouter() {
             <Route path="calendario" element={<CalendarioPage />} />
             <Route path="rotina" element={<RotinaPage />} />
             <Route path="habitos" element={<HabitosPage />} />
+            <Route path="metas" element={<MetasPage />} />
             <Route path="tarefas" element={<TarefasPage />} />
             <Route path="perfil" element={<PerfilPage />} />
             <Route path="configuracoes" element={<ConfiguracoesPage />} />
