@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { lazy, Suspense, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -16,7 +16,11 @@ import { Card } from '@/components/ui/Card'
 import { Logo } from '@/components/Logo'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { TiltCard } from '@/components/ui/TiltCard'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { cn } from '@/lib/cn'
+
+const HeroScene = lazy(() => import('@/components/landing/HeroScene'))
 
 const features = [
   {
@@ -125,13 +129,15 @@ function LaptopMockup() {
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
       className="w-full max-w-lg"
     >
-      <div className="shadow-card-lg rounded-2xl border-[6px] border-slate-900 bg-slate-900 p-1.5 sm:border-[10px] sm:p-2">
-        <div className="flex items-center justify-center rounded-lg bg-white py-6 sm:py-8">
-          <DashboardPreview />
+      <TiltCard tiltStrength={12}>
+        <div className="shadow-card-lg rounded-2xl border-[6px] border-slate-900 bg-slate-900 p-1.5 sm:border-[10px] sm:p-2">
+          <div className="flex items-center justify-center rounded-lg bg-white py-6 sm:py-8">
+            <DashboardPreview />
+          </div>
         </div>
-      </div>
-      <div className="mx-auto h-3 w-[85%] rounded-b-xl bg-slate-800" />
-      <div className="mx-auto h-1.5 w-[95%] rounded-b-md bg-slate-700/70" />
+        <div className="mx-auto h-3 w-[85%] rounded-b-xl bg-slate-800" />
+        <div className="mx-auto h-1.5 w-[95%] rounded-b-md bg-slate-700/70" />
+      </TiltCard>
     </motion.div>
   )
 }
@@ -158,6 +164,8 @@ function Badge({
 }
 
 export function LandingPage() {
+  const showHeroScene = useMediaQuery('(min-width: 1024px)')
+
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
@@ -246,7 +254,12 @@ export function LandingPage() {
               </motion.div>
             </motion.div>
 
-            <div className="flex justify-center lg:justify-end">
+            <div className="relative isolate flex justify-center lg:justify-end">
+              {showHeroScene && (
+                <Suspense fallback={null}>
+                  <HeroScene />
+                </Suspense>
+              )}
               <LaptopMockup />
             </div>
           </div>
@@ -278,15 +291,17 @@ export function LandingPage() {
           >
             {features.map(({ icon: Icon, title, description }) => (
               <motion.div key={title} variants={fadeUp}>
-                <Card className="shadow-card hover:shadow-card-lg h-full p-6 text-left transition-shadow">
-                  <div className="bg-primary-500/10 text-primary-600 inline-flex h-10 w-10 items-center justify-center rounded-lg">
-                    <Icon size={20} />
-                  </div>
-                  <h3 className="mt-4 text-base font-semibold">{title}</h3>
-                  <p className="mt-1.5 text-sm text-[var(--color-text-muted)]">
-                    {description}
-                  </p>
-                </Card>
+                <TiltCard tiltStrength={6} className="h-full">
+                  <Card className="shadow-card hover:shadow-card-lg h-full p-6 text-left transition-shadow">
+                    <div className="bg-primary-500/10 text-primary-600 inline-flex h-10 w-10 items-center justify-center rounded-lg">
+                      <Icon size={20} />
+                    </div>
+                    <h3 className="mt-4 text-base font-semibold">{title}</h3>
+                    <p className="mt-1.5 text-sm text-[var(--color-text-muted)]">
+                      {description}
+                    </p>
+                  </Card>
+                </TiltCard>
               </motion.div>
             ))}
           </motion.div>
@@ -299,24 +314,26 @@ export function LandingPage() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ duration: 0.5 }}
           >
-            <Card className="shadow-card-lg px-8 py-12">
-              <h2 className="font-heading text-2xl font-bold sm:text-3xl">
-                Pequenos hábitos, grandes manhãs.
-              </h2>
-              <p className="mx-auto mt-2 max-w-md text-sm text-[var(--color-text-muted)]">
-                Todo dia é uma nova chance de começar. Crie sua rotina em
-                minutos e veja sua consistência crescer.
-              </p>
-              <Link
-                to="/cadastro"
-                className={cn(
-                  buttonVariants('primary'),
-                  'mt-6 px-6 py-3 text-base',
-                )}
-              >
-                Criar minha rotina
-              </Link>
-            </Card>
+            <TiltCard tiltStrength={8}>
+              <Card className="shadow-card-lg px-8 py-12">
+                <h2 className="font-heading text-2xl font-bold sm:text-3xl">
+                  Pequenos hábitos, grandes manhãs.
+                </h2>
+                <p className="mx-auto mt-2 max-w-md text-sm text-[var(--color-text-muted)]">
+                  Todo dia é uma nova chance de começar. Crie sua rotina em
+                  minutos e veja sua consistência crescer.
+                </p>
+                <Link
+                  to="/cadastro"
+                  className={cn(
+                    buttonVariants('primary'),
+                    'mt-6 px-6 py-3 text-base',
+                  )}
+                >
+                  Criar minha rotina
+                </Link>
+              </Card>
+            </TiltCard>
           </motion.div>
         </section>
       </main>
