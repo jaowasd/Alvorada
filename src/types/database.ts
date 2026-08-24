@@ -204,6 +204,15 @@ export interface GoalProgressEntry {
   created_at: string
 }
 
+export interface SharedRoutineLink {
+  id: string
+  routine_id: string
+  user_id: string
+  token: string
+  created_at: string
+  revoked_at: string | null
+}
+
 export interface FocusSession {
   id: string
   user_id: string

@@ -22,6 +22,7 @@ import { MotionCard } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { PageFade } from '@/components/ui/PageFade'
 import { RoutineStepForm } from '@/components/routine/RoutineStepForm'
+import { ShareRoutineButton } from '@/components/routine/ShareRoutineButton'
 import { SortableStepItem } from '@/components/routine/SortableStepItem'
 import { useAuth } from '@/hooks/useAuth'
 import { getLocalDateString } from '@/lib/date'
@@ -196,7 +197,7 @@ export function RotinaPage() {
 
   return (
     <PageFade className="mx-auto max-w-3xl">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold text-[var(--color-text)]">
             Rotina matinal
@@ -205,13 +206,19 @@ export function RotinaPage() {
             Monte sua manhã em etapas, na ordem que funciona para você.
           </p>
         </div>
-        <Button
-          onClick={openCreateModal}
-          className="gap-1.5"
-          disabled={!routine}
-        >
-          <Plus size={16} /> Nova etapa
-        </Button>
+        <div className="flex items-center gap-2">
+          <ShareRoutineButton
+            routineId={routine?.id ?? ''}
+            disabled={!routine}
+          />
+          <Button
+            onClick={openCreateModal}
+            className="gap-1.5"
+            disabled={!routine}
+          >
+            <Plus size={16} /> Nova etapa
+          </Button>
+        </div>
       </div>
 
       <div className="mt-6">

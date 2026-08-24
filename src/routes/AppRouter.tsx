@@ -79,6 +79,11 @@ const FinanceConfiguracoesPage = lazy(() =>
     default: m.ConfiguracoesPage,
   })),
 )
+const SharedRoutinePage = lazy(() =>
+  import('@/pages/SharedRoutinePage').then((m) => ({
+    default: m.SharedRoutinePage,
+  })),
+)
 const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 )
@@ -121,6 +126,7 @@ export function AppRouter() {
           />
           <Route path="/recuperar-senha" element={<RecuperarSenhaPage />} />
           <Route path="/redefinir-senha" element={<RedefinirSenhaPage />} />
+          <Route path="/rotina/:token" element={<SharedRoutinePage />} />
           <Route
             path="/app"
             element={
