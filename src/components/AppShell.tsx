@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   BarChart3,
+  BookOpen,
   Calendar,
   Crown,
   HeartPulse,
@@ -50,6 +51,7 @@ const navItems: NavItem[] = [
   { to: '/app/habitos', label: 'Hábitos', icon: HeartPulse, end: false },
   { to: '/app/metas', label: 'Metas', icon: Target, end: false },
   { to: '/app/tarefas', label: 'Tarefas', icon: ListChecks, end: false },
+  { to: '/app/diario', label: 'Diário', icon: BookOpen, end: false },
   { to: '/app/financas', label: 'Finanças', icon: Wallet, end: false },
 ]
 
@@ -70,6 +72,7 @@ const moreMenuItems: NavItem[] = [
   { to: '/app/habitos', label: 'Hábitos', icon: HeartPulse },
   { to: '/app/metas', label: 'Metas', icon: Target },
   { to: '/app/tarefas', label: 'Tarefas', icon: ListChecks },
+  { to: '/app/diario', label: 'Diário', icon: BookOpen },
   { to: '/app/perfil', label: 'Perfil', icon: UserRound },
   { to: '/app/premium', label: 'Meu plano', icon: Crown },
 ]

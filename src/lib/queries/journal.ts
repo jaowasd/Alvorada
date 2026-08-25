@@ -28,6 +28,23 @@ export async function fetchJournalEntryForDate(
   return data
 }
 
+export async function fetchJournalEntriesInRange(
+  userId: string,
+  fromDate: string,
+  toDate: string,
+): Promise<JournalEntry[]> {
+  const client = requireSupabase()
+  const { data, error } = await client
+    .from('journal_entries')
+    .select('*')
+    .eq('user_id', userId)
+    .gte('entry_date', fromDate)
+    .lte('entry_date', toDate)
+    .order('entry_date', { ascending: false })
+  if (error) throw error
+  return data
+}
+
 export interface JournalEntryInput {
   mood: JournalMood
   notes: string | null

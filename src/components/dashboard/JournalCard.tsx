@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { Angry, Frown, Laugh, Meh, Smile, type LucideIcon } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/cn'
 import { getLocalDateString } from '@/lib/date'
 import { interactiveStates } from '@/lib/interactive-states'
+import { MOOD_OPTIONS } from '@/lib/journalMoods'
 import {
   fetchJournalEntryForDate,
   upsertJournalEntry,
@@ -17,18 +17,6 @@ import {
   journalNotesSchema,
 } from '@/lib/validation/journal'
 import type { JournalMood } from '@/types/database'
-
-const MOOD_OPTIONS: {
-  value: JournalMood
-  label: string
-  icon: LucideIcon
-}[] = [
-  { value: 'otimo', label: 'Ótimo', icon: Laugh },
-  { value: 'bom', label: 'Bom', icon: Smile },
-  { value: 'neutro', label: 'Neutro', icon: Meh },
-  { value: 'dificil', label: 'Difícil', icon: Frown },
-  { value: 'pesado', label: 'Pesado', icon: Angry },
-]
 
 export function JournalCard() {
   const { user } = useAuth()

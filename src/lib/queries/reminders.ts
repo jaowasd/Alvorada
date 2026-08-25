@@ -15,15 +15,18 @@ export async function fetchActiveReminders(
   return data
 }
 
-export interface CustomReminderInput {
+export interface ReminderInput {
   custom_label: string
   remind_at: string
   message: string | null
+  task_id?: string | null
+  habit_id?: string | null
+  routine_step_id?: string | null
 }
 
-export async function createCustomReminder(
+export async function createReminder(
   userId: string,
-  input: CustomReminderInput,
+  input: ReminderInput,
 ): Promise<Reminder> {
   const client = requireSupabase()
   const { data, error } = await client

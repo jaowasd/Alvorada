@@ -36,6 +36,28 @@ export interface Task {
   is_completed: boolean
   completed_at: string | null
   deleted_at: string | null
+  recurring_task_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type RecurringTaskFrequency = 'monthly' | 'weekly'
+
+export interface RecurringTask {
+  id: string
+  user_id: string
+  title: string
+  notes: string | null
+  category_id: string | null
+  estimated_duration_minutes: number | null
+  frequency: RecurringTaskFrequency
+  day_of_month: number | null
+  weekday: number | null
+  start_date: string
+  end_date: string | null
+  last_generated_date: string | null
+  is_active: boolean
+  archived_at: string | null
   created_at: string
   updated_at: string
 }

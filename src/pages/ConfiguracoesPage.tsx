@@ -11,13 +11,19 @@ import {
   Download,
   Laptop,
   Moon,
+  Plus,
   Sun,
+  Tags,
 } from 'lucide-react'
 import { PremiumBadge } from '@/components/premium/PremiumBadge'
+import { CategoryForm } from '@/components/categories/CategoryForm'
+import { CategoryItem } from '@/components/categories/CategoryItem'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { Card, MotionCard } from '@/components/ui/Card'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Input } from '@/components/ui/Input'
+import { Modal } from '@/components/ui/Modal'
 import { PageFade } from '@/components/ui/PageFade'
 import { Select } from '@/components/ui/Select'
 import { useAuth } from '@/hooks/useAuth'
@@ -29,6 +35,13 @@ import { cn } from '@/lib/cn'
 import { buildUserDataExport, downloadJson } from '@/lib/exportUserData'
 import { getLocalDateString } from '@/lib/date'
 import { interactiveStates } from '@/lib/interactive-states'
+import { staggerContainer } from '@/lib/motion'
+import {
+  createCategory,
+  deleteCategory,
+  fetchCategories,
+  updateCategory,
+} from '@/lib/queries/categories'
 import {
   fetchIcsExportToken,
   generateIcsExportToken,
@@ -38,11 +51,13 @@ import { deleteOwnAccount, updateProfile } from '@/lib/queries/profile'
 import { supabaseUrl } from '@/lib/supabase'
 import { BRAZIL_TIMEZONES } from '@/lib/timezones'
 import type { Theme } from '@/hooks/useTheme'
+import type { Category } from '@/types/database'
 import {
   timezoneFormSchema,
   toTimezoneInput,
   type TimezoneFormValues,
 } from '@/lib/validation/profile'
+import { toCategoryInput, type CategoryFormValues } from '@/lib/validation/category'
 
 const THEME_OPTIONS: { value: Theme; label: string; icon: typeof Sun }[] = [
   { value: 'light', label: 'Claro', icon: Sun },
@@ -72,6 +87,10 @@ export function ConfiguracoesPage() {
   const [icsCopied, setIcsCopied] = useState(false)
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
   const [icsExpiresInDays, setIcsExpiresInDays] = useState('')
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
+  const [deleteCategoryTarget, setDeleteCategoryTarget] =
+    useState<Category | null>(null)
 
   const icsTokenQuery = useQuery({
     queryKey: ['icsExportToken', user?.id],
@@ -95,6 +114,60 @@ export function ConfiguracoesPage() {
     mutationFn: () => revokeIcsExportToken(user!.id),
     onSuccess: invalidateIcsToken,
   })
+
+  const categoriesQuery = useQuery({
+    queryKey: ['categories'],
+    queryFn: fetchCategories,
+    enabled: !!user,
+  })
+  const customCategories = (categoriesQuery.data ?? []).filter(
+    (c) => !c.is_system,
+  )
+
+  const invalidateCategories = () =>
+    queryClient.invalidateQueries({ queryKey: ['categories'] })
+
+  const closeCategoryModal = () => {
+    setCategoryModalOpen(false)
+    setEditingCategory(null)
+  }
+
+  const createCategoryMutation = useMutation({
+    mutationFn: (values: CategoryFormValues) =>
+      createCategory(user!.id, toCategoryInput(values)),
+    onSuccess: () => {
+      invalidateCategories()
+      closeCategoryModal()
+    },
+  })
+
+  const updateCategoryMutation = useMutation({
+    mutationFn: ({ id, values }: { id: string; values: CategoryFormValues }) =>
+      updateCategory(id, toCategoryInput(values)),
+    onSuccess: () => {
+      invalidateCategories()
+      closeCategoryModal()
+    },
+  })
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: (category: Category) => deleteCategory(category.id),
+    onSuccess: () => {
+      invalidateCategories()
+      setDeleteCategoryTarget(null)
+    },
+  })
+
+  const handleCategoryFormSubmit = async (values: CategoryFormValues) => {
+    if (editingCategory) {
+      await updateCategoryMutation.mutateAsync({
+        id: editingCategory.id,
+        values,
+      })
+    } else {
+      await createCategoryMutation.mutateAsync(values)
+    }
+  }
 
   const icsUrl = icsTokenQuery.data
     ? `${supabaseUrl}/functions/v1/export-ics?token=${icsTokenQuery.data.token}`
@@ -365,6 +438,61 @@ export function ConfiguracoesPage() {
         )}
       </Card>
 
+      <Card className="mt-6 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-[var(--color-text)]">
+              Categorias personalizadas
+            </h2>
+            <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+              Além das categorias do sistema, usadas em rotina, hábitos e
+              tarefas.
+            </p>
+          </div>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setEditingCategory(null)
+              setCategoryModalOpen(true)
+            }}
+            className="gap-1.5"
+          >
+            <Plus size={16} /> Nova
+          </Button>
+        </div>
+
+        <div className="mt-4">
+          {customCategories.length === 0 ? (
+            <EmptyState
+              icon={Tags}
+              title="Nenhuma categoria personalizada"
+              description="Crie a primeira para organizar do seu jeito."
+            />
+          ) : (
+            <MotionCard
+              variants={staggerContainer}
+              initial="hidden"
+              animate="show"
+              className="divide-y divide-[var(--color-border)] overflow-hidden py-0"
+            >
+              <AnimatePresence>
+                {customCategories.map((category) => (
+                  <CategoryItem
+                    key={category.id}
+                    category={category}
+                    onEdit={(c) => {
+                      setEditingCategory(c)
+                      setCategoryModalOpen(true)
+                    }}
+                    onDelete={(c) => setDeleteCategoryTarget(c)}
+                  />
+                ))}
+              </AnimatePresence>
+            </MotionCard>
+          )}
+        </div>
+      </Card>
+
       <Card className="border-error-500/30 mt-6 p-6">
         <div className="flex items-center gap-2">
           <AlertTriangle size={16} className="text-error-500" />
@@ -408,6 +536,34 @@ export function ConfiguracoesPage() {
             isPending={deleteAccountMutation.isPending}
             onConfirm={handleConfirmDelete}
             onClose={() => setConfirmDeleteOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {categoryModalOpen && (
+          <Modal
+            title={editingCategory ? 'Editar categoria' : 'Nova categoria'}
+            onClose={closeCategoryModal}
+          >
+            <CategoryForm
+              initialCategory={editingCategory ?? undefined}
+              onSubmit={handleCategoryFormSubmit}
+              onCancel={closeCategoryModal}
+            />
+          </Modal>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {deleteCategoryTarget && (
+          <ConfirmDialog
+            title="Excluir categoria"
+            message={`Excluir a categoria "${deleteCategoryTarget.name}"? Itens que a usam ficam sem categoria.`}
+            confirmLabel="Excluir"
+            isPending={deleteCategoryMutation.isPending}
+            onConfirm={() => deleteCategoryMutation.mutate(deleteCategoryTarget)}
+            onClose={() => setDeleteCategoryTarget(null)}
           />
         )}
       </AnimatePresence>

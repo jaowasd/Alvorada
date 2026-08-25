@@ -83,3 +83,34 @@ export function computeDayCompletionPercent(
     Math.min(completedStepIds.size, totalSteps) + completedHabitsCount
   return Math.round((totalCompleted / totalDue) * 100)
 }
+
+/** % de conclusão por dia num intervalo, pra alimentar o mapa de consistência. */
+export function buildConsistencyMap(
+  startDate: string,
+  endDate: string,
+  totalSteps: number,
+  routineCompletions: RoutineStepCompletion[],
+  habits: Habit[],
+  habitWeekdaysByHabit: Map<string, number[]>,
+  habitCompletions: HabitCompletion[],
+): Map<string, number | null> {
+  const map = new Map<string, number | null>()
+  let cursor = new Date(`${startDate}T00:00:00`)
+  const end = new Date(`${endDate}T00:00:00`)
+  while (cursor <= end) {
+    const dateStr = getLocalDateString(cursor)
+    map.set(
+      dateStr,
+      computeDayCompletionPercent(
+        dateStr,
+        totalSteps,
+        routineCompletions,
+        habits,
+        habitWeekdaysByHabit,
+        habitCompletions,
+      ),
+    )
+    cursor = addDays(cursor, 1)
+  }
+  return map
+}

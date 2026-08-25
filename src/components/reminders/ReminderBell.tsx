@@ -1,23 +1,37 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Bell, Plus, X } from 'lucide-react'
+import { Bell, HeartPulse, ListChecks, Plus, Waypoints, X } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/cn'
 import { getLocalDateString } from '@/lib/date'
+import { fetchHabits } from '@/lib/queries/habits'
 import { interactiveStates } from '@/lib/interactive-states'
 import { EASE_SMOOTH } from '@/lib/motion'
 import {
-  createCustomReminder,
+  createReminder,
   dismissReminder,
   fetchActiveReminders,
 } from '@/lib/queries/reminders'
 import {
+  fetchOrCreateActiveRoutine,
+  fetchRoutineSteps,
+} from '@/lib/queries/routines'
+import { fetchTasks } from '@/lib/queries/tasks'
+import {
   customReminderFormSchema,
   REMINDER_LABEL_MAX_LENGTH,
   REMINDER_MESSAGE_MAX_LENGTH,
+  type ReminderLinkType,
 } from '@/lib/validation/reminder'
+
+const LINK_TYPE_ICONS: Record<Exclude<ReminderLinkType, 'none'>, typeof ListChecks> = {
+  task: ListChecks,
+  habit: HeartPulse,
+  routine_step: Waypoints,
+}
 
 function formatReminderDate(date: string): string {
   return new Intl.DateTimeFormat('pt-BR', {
@@ -32,6 +46,8 @@ export function ReminderBell() {
   const today = getLocalDateString()
   const [open, setOpen] = useState(false)
   const [addingOpen, setAddingOpen] = useState(false)
+  const [linkType, setLinkType] = useState<ReminderLinkType>('none')
+  const [linkedId, setLinkedId] = useState('')
   const [label, setLabel] = useState('')
   const [remindAt, setRemindAt] = useState(today)
   const [message, setMessage] = useState('')
@@ -44,6 +60,30 @@ export function ReminderBell() {
   })
   const reminders = remindersQuery.data ?? []
   const dueCount = reminders.filter((r) => r.remind_at <= today).length
+
+  const tasksQuery = useQuery({
+    queryKey: ['tasks', user?.id],
+    queryFn: () => fetchTasks(user!.id),
+    enabled: !!user && addingOpen && linkType === 'task',
+  })
+  const openTasks = (tasksQuery.data ?? []).filter((t) => !t.is_completed)
+
+  const habitsQuery = useQuery({
+    queryKey: ['habits', user?.id],
+    queryFn: () => fetchHabits(user!.id),
+    enabled: !!user && addingOpen && linkType === 'habit',
+  })
+
+  const routineQuery = useQuery({
+    queryKey: ['routine', user?.id],
+    queryFn: () => fetchOrCreateActiveRoutine(user!.id),
+    enabled: !!user && addingOpen && linkType === 'routine_step',
+  })
+  const stepsQuery = useQuery({
+    queryKey: ['routineSteps', routineQuery.data?.id],
+    queryFn: () => fetchRoutineSteps(routineQuery.data!.id),
+    enabled: !!routineQuery.data && addingOpen && linkType === 'routine_step',
+  })
 
   useEffect(() => {
     if (!open) return
@@ -60,17 +100,35 @@ export function ReminderBell() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [open])
 
+  const resolveLinkedLabel = (): string => {
+    if (linkType === 'task') {
+      return openTasks.find((t) => t.id === linkedId)?.title ?? ''
+    }
+    if (linkType === 'habit') {
+      return (habitsQuery.data ?? []).find((h) => h.id === linkedId)?.name ?? ''
+    }
+    if (linkType === 'routine_step') {
+      return (stepsQuery.data ?? []).find((s) => s.id === linkedId)?.title ?? ''
+    }
+    return label.trim()
+  }
+
   const createMutation = useMutation({
     mutationFn: () =>
-      createCustomReminder(user!.id, {
-        custom_label: label.trim(),
+      createReminder(user!.id, {
+        custom_label: resolveLinkedLabel(),
         remind_at: remindAt,
         message: message.trim() ? message.trim() : null,
+        task_id: linkType === 'task' ? linkedId : null,
+        habit_id: linkType === 'habit' ? linkedId : null,
+        routine_step_id: linkType === 'routine_step' ? linkedId : null,
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: ['reminders', user?.id],
       })
+      setLinkType('none')
+      setLinkedId('')
       setLabel('')
       setMessage('')
       setRemindAt(today)
@@ -90,6 +148,8 @@ export function ReminderBell() {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
     const result = customReminderFormSchema.safeParse({
+      linkType,
+      linkedId,
       label,
       remindAt,
       message,
@@ -155,13 +215,56 @@ export function ReminderBell() {
                   className="overflow-hidden"
                 >
                   <div className="mt-3 flex flex-col gap-2">
-                    <Input
-                      placeholder="Ex.: revisão financeira semanal"
-                      value={label}
-                      onChange={(e) => setLabel(e.target.value)}
-                      maxLength={REMINDER_LABEL_MAX_LENGTH}
-                      autoFocus
-                    />
+                    <Select
+                      value={linkType}
+                      onChange={(e) => {
+                        setLinkType(e.target.value as ReminderLinkType)
+                        setLinkedId('')
+                      }}
+                    >
+                      <option value="none">Lembrete livre</option>
+                      <option value="task">Vincular a uma tarefa</option>
+                      <option value="habit">Vincular a um hábito</option>
+                      <option value="routine_step">
+                        Vincular a uma etapa da rotina
+                      </option>
+                    </Select>
+
+                    {linkType === 'none' ? (
+                      <Input
+                        placeholder="Ex.: revisão financeira semanal"
+                        value={label}
+                        onChange={(e) => setLabel(e.target.value)}
+                        maxLength={REMINDER_LABEL_MAX_LENGTH}
+                        autoFocus
+                      />
+                    ) : (
+                      <Select
+                        value={linkedId}
+                        onChange={(e) => setLinkedId(e.target.value)}
+                      >
+                        <option value="">Selecione</option>
+                        {linkType === 'task' &&
+                          openTasks.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {t.title}
+                            </option>
+                          ))}
+                        {linkType === 'habit' &&
+                          (habitsQuery.data ?? []).map((h) => (
+                            <option key={h.id} value={h.id}>
+                              {h.name}
+                            </option>
+                          ))}
+                        {linkType === 'routine_step' &&
+                          (stepsQuery.data ?? []).map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.title}
+                            </option>
+                          ))}
+                      </Select>
+                    )}
+
                     <Input
                       type="date"
                       value={remindAt}
@@ -175,7 +278,10 @@ export function ReminderBell() {
                     />
                     <button
                       type="submit"
-                      disabled={!label.trim() || createMutation.isPending}
+                      disabled={
+                        (linkType === 'none' ? !label.trim() : !linkedId) ||
+                        createMutation.isPending
+                      }
                       className={cn(
                         'bg-primary-600 rounded-lg px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50',
                         interactiveStates,
@@ -201,13 +307,26 @@ export function ReminderBell() {
               )}
               {reminders.map((reminder) => {
                 const isDue = reminder.remind_at <= today
+                const LinkIcon = reminder.task_id
+                  ? LINK_TYPE_ICONS.task
+                  : reminder.habit_id
+                    ? LINK_TYPE_ICONS.habit
+                    : reminder.routine_step_id
+                      ? LINK_TYPE_ICONS.routine_step
+                      : null
                 return (
                   <div
                     key={reminder.id}
                     className="flex items-start justify-between gap-2 rounded-lg px-2 py-2 hover:bg-[var(--color-bg)]"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-[var(--color-text)]">
+                      <p className="flex items-center gap-1.5 truncate text-sm font-medium text-[var(--color-text)]">
+                        {LinkIcon && (
+                          <LinkIcon
+                            size={13}
+                            className="text-primary-600 shrink-0"
+                          />
+                        )}
                         {reminder.custom_label}
                       </p>
                       {reminder.message && (

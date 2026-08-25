@@ -154,6 +154,7 @@ function taskCompletedAt(completedAt: string | null): Task {
     is_completed: completedAt !== null,
     completed_at: completedAt,
     deleted_at: null,
+    recurring_task_id: null,
     created_at: '',
     updated_at: '',
   }

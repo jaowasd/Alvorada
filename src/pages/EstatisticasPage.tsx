@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { subWeeks } from 'date-fns'
+import { TrendingDown, TrendingUp } from 'lucide-react'
 import {
   Bar,
   BarChart,
@@ -14,12 +16,23 @@ import {
 } from 'recharts'
 import { PremiumGate } from '@/components/premium/PremiumGate'
 import { Card } from '@/components/ui/Card'
+import { ConsistencyHeatmap } from '@/components/ui/ConsistencyHeatmap'
 import { PageFade } from '@/components/ui/PageFade'
 import { useAuth } from '@/hooks/useAuth'
+import { buildConsistencyMap } from '@/lib/calendarGrid'
+import { cn } from '@/lib/cn'
+import { getLocalDateString } from '@/lib/date'
 import {
+  computeHabitBreakdown,
   computeHabitConsistencyByWeek,
+  computeHabitConsistencyMonthComparison,
   computeRoutineCompletionByWeek,
+  computeRoutineCompletionMonthComparison,
+  computeRoutineTaskCorrelationInsight,
   computeTasksCompletedByWeek,
+  computeTasksCompletedMonthComparison,
+  type HabitBreakdownPoint,
+  type MonthComparison,
   type WeeklyPoint,
 } from '@/lib/statsCalculations'
 import {
@@ -140,6 +153,89 @@ function WeeklyBarChart({ data }: { data: WeeklyPoint[] }) {
   )
 }
 
+function MonthComparisonRow({
+  label,
+  comparison,
+  unit = '',
+}: {
+  label: string
+  comparison: MonthComparison
+  unit?: string
+}) {
+  const delta = comparison.currentValue - comparison.previousValue
+  const tone =
+    delta > 0
+      ? 'text-success-600'
+      : delta < 0
+        ? 'text-error-500'
+        : 'text-[var(--color-text-muted)]'
+  return (
+    <div className="flex items-center justify-between border-b border-[var(--color-border)] py-2 text-sm last:border-0">
+      <span className="text-[var(--color-text)]">{label}</span>
+      <span className="flex items-center gap-2">
+        <span className="tabular-nums text-[var(--color-text-muted)]">
+          {comparison.previousValue}
+          {unit} → {comparison.currentValue}
+          {unit}
+        </span>
+        {delta !== 0 && (
+          <span
+            className={cn('flex items-center gap-0.5 font-medium tabular-nums', tone)}
+          >
+            {delta > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+            {Math.abs(delta)}
+            {unit}
+          </span>
+        )}
+      </span>
+    </div>
+  )
+}
+
+function HabitBreakdownChart({ data }: { data: HabitBreakdownPoint[] }) {
+  const height = Math.max(120, data.length * 36)
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart
+        data={data}
+        layout="vertical"
+        margin={{ top: 8, right: 16, left: 0, bottom: 0 }}
+      >
+        <CartesianGrid
+          horizontal={false}
+          stroke="var(--color-border)"
+          strokeDasharray="3 3"
+        />
+        <XAxis
+          type="number"
+          domain={[0, 100]}
+          tick={{ fill: 'var(--color-text-muted)', fontSize: 11 }}
+          axisLine={{ stroke: 'var(--color-border)' }}
+          tickLine={false}
+          unit="%"
+        />
+        <YAxis
+          dataKey="name"
+          type="category"
+          width={96}
+          tick={{ fill: 'var(--color-text-muted)', fontSize: 11 }}
+          axisLine={false}
+          tickLine={false}
+        />
+        <Tooltip
+          content={ChartTooltip}
+          cursor={{ fill: 'var(--color-primary-500)', opacity: 0.08 }}
+        />
+        <Bar
+          dataKey="percent"
+          fill="var(--color-primary-600)"
+          radius={[0, 4, 4, 0]}
+        />
+      </BarChart>
+    </ResponsiveContainer>
+  )
+}
+
 function EstatisticasContent() {
   const { user } = useAuth()
 
@@ -231,6 +327,60 @@ function EstatisticasContent() {
     [tasks],
   )
 
+  const habitBreakdown = useMemo(
+    () =>
+      computeHabitBreakdown(
+        habits,
+        habitWeekdaysByHabit,
+        habitCompletions,
+        WEEKS_COUNT,
+      ),
+    [habits, habitWeekdaysByHabit, habitCompletions],
+  )
+
+  const tasksMonthComparison = useMemo(
+    () => computeTasksCompletedMonthComparison(tasks),
+    [tasks],
+  )
+  const routineMonthComparison = useMemo(
+    () => computeRoutineCompletionMonthComparison(totalSteps, routineCompletions),
+    [totalSteps, routineCompletions],
+  )
+  const habitsMonthComparison = useMemo(
+    () =>
+      computeHabitConsistencyMonthComparison(
+        habits,
+        habitWeekdaysByHabit,
+        habitCompletions,
+      ),
+    [habits, habitWeekdaysByHabit, habitCompletions],
+  )
+
+  const yearConsistencyMap = useMemo(
+    () =>
+      buildConsistencyMap(
+        getLocalDateString(subWeeks(new Date(), 51)),
+        getLocalDateString(),
+        totalSteps,
+        routineCompletions,
+        habits,
+        habitWeekdaysByHabit,
+        habitCompletions,
+      ),
+    [totalSteps, routineCompletions, habits, habitWeekdaysByHabit, habitCompletions],
+  )
+
+  const correlationInsight = useMemo(
+    () =>
+      computeRoutineTaskCorrelationInsight(
+        totalSteps,
+        routineCompletions,
+        tasks,
+        WEEKS_COUNT,
+      ),
+    [totalSteps, routineCompletions, tasks],
+  )
+
   if (isLoading) {
     return (
       <p
@@ -280,6 +430,73 @@ function EstatisticasContent() {
           <WeeklyBarChart data={tasksSeries} />
         </div>
       </Card>
+
+      <Card className="p-6">
+        <h2 className="text-sm font-semibold text-[var(--color-text)]">
+          Comparação mensal
+        </h2>
+        <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+          Mês atual (até hoje) contra o mês anterior completo.
+        </p>
+        <div className="mt-4">
+          <MonthComparisonRow label="Tarefas concluídas" comparison={tasksMonthComparison} />
+          <MonthComparisonRow
+            label="Conclusão da rotina"
+            comparison={routineMonthComparison}
+            unit="%"
+          />
+          <MonthComparisonRow
+            label="Consistência de hábitos"
+            comparison={habitsMonthComparison}
+            unit="%"
+          />
+        </div>
+      </Card>
+
+      {habitBreakdown.length > 0 && (
+        <Card className="p-6">
+          <h2 className="text-sm font-semibold text-[var(--color-text)]">
+            Hábitos individualmente
+          </h2>
+          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+            % de consistência de cada hábito nas últimas {WEEKS_COUNT} semanas.
+          </p>
+          <div className="mt-4">
+            <HabitBreakdownChart data={habitBreakdown} />
+          </div>
+        </Card>
+      )}
+
+      <Card className="p-6">
+        <h2 className="text-sm font-semibold text-[var(--color-text)]">
+          Consistência (12 meses)
+        </h2>
+        <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+          Visão ampliada do mapa de consistência do último ano.
+        </p>
+        <div className="mt-4">
+          <ConsistencyHeatmap dataByDate={yearConsistencyMap} weeksCount={52} />
+        </div>
+      </Card>
+
+      {correlationInsight && (
+        <Card className="p-6">
+          <h2 className="text-sm font-semibold text-[var(--color-text)]">
+            Insight
+          </h2>
+          <p className="mt-2 text-sm text-[var(--color-text)]">
+            Nos dias em que você completa toda a rotina, você conclui em média{' '}
+            <strong className="font-semibold">
+              {correlationInsight.fullRoutineAvgTasks.toFixed(1)}
+            </strong>{' '}
+            tarefas — contra{' '}
+            <strong className="font-semibold">
+              {correlationInsight.otherAvgTasks.toFixed(1)}
+            </strong>{' '}
+            nos demais dias.
+          </p>
+        </Card>
+      )}
     </div>
   )
 }

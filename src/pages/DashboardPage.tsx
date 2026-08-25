@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence } from 'framer-motion'
+import { subWeeks } from 'date-fns'
 import {
   AlertTriangle,
   CheckCircle2,
@@ -14,6 +15,7 @@ import { MotionCard } from '@/components/ui/Card'
 import { PageFade } from '@/components/ui/PageFade'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber'
+import { ConsistencyHeatmap } from '@/components/ui/ConsistencyHeatmap'
 import { ChecklistItem } from '@/components/dashboard/ChecklistItem'
 import { FocusLauncherCard } from '@/components/dashboard/FocusLauncherCard'
 import { JournalCard } from '@/components/dashboard/JournalCard'
@@ -22,6 +24,7 @@ import { StatsBar } from '@/components/dashboard/StatsBar'
 import { OnboardingModal } from '@/components/onboarding/OnboardingModal'
 import { useAuth } from '@/hooks/useAuth'
 import { useDisplayName, useProfile } from '@/hooks/useProfile'
+import { buildConsistencyMap } from '@/lib/calendarGrid'
 import { getGreeting, getLocalDateString } from '@/lib/date'
 import { isHabitDueOnDate } from '@/lib/habits'
 import { staggerContainer } from '@/lib/motion'
@@ -33,6 +36,7 @@ import {
 } from '@/lib/streaks'
 import {
   completeHabit,
+  fetchAllHabitCompletions,
   fetchHabitCompletionsForDate,
   fetchHabitFrequencyDays,
   fetchHabits,
@@ -93,6 +97,12 @@ export function DashboardPage() {
     enabled: !!user,
   })
 
+  const allHabitCompletionsQuery = useQuery({
+    queryKey: ['allHabitCompletions', user?.id],
+    queryFn: () => fetchAllHabitCompletions(user!.id),
+    enabled: !!user,
+  })
+
   const routineStreak = useMemo(() => {
     const fullyCompletedDates = getFullyCompletedRoutineDates(
       allRoutineCompletionsQuery.data ?? [],
@@ -130,6 +140,27 @@ export function DashboardPage() {
         isHabitDueOnDate(h, weekdaysByHabit.get(h.id) ?? []),
       ),
     [habits, weekdaysByHabit],
+  )
+
+  const consistencyMap = useMemo(
+    () =>
+      buildConsistencyMap(
+        getLocalDateString(subWeeks(new Date(), 25)),
+        today,
+        steps.length,
+        allRoutineCompletionsQuery.data ?? [],
+        habits,
+        weekdaysByHabit,
+        allHabitCompletionsQuery.data ?? [],
+      ),
+    [
+      today,
+      steps.length,
+      allRoutineCompletionsQuery.data,
+      habits,
+      weekdaysByHabit,
+      allHabitCompletionsQuery.data,
+    ],
   )
 
   const habitCompletionsTodayQuery = useQuery({
@@ -438,6 +469,15 @@ export function DashboardPage() {
           )}
 
           <FocusLauncherCard />
+
+          <section>
+            <h2 className="mb-2 text-sm font-semibold text-[var(--color-text)]">
+              Consistência
+            </h2>
+            <MotionCard>
+              <ConsistencyHeatmap dataByDate={consistencyMap} weeksCount={26} today={today} />
+            </MotionCard>
+          </section>
 
           <JournalCard />
         </div>
