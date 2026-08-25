@@ -10,7 +10,6 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-.vite
 *.local
 
 # Environment variables
@@ -20,9 +19,6 @@ dist-ssr
 
 # Third-party tool workspace (not created by this project)
 .mimocode
-
-# Configuração local do Claude Code (skills, settings) — não é parte do produto
-.claude
 
 # Editor directories and files
 .vscode/*
