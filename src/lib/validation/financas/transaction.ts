@@ -33,7 +33,12 @@ export const transactionFormSchema = z
     categoryId: z.string().optional(),
     accountId: z.string().min(1, 'Selecione uma conta'),
     relatedAccountId: z.string().optional(),
-    paymentMethod: z.string().optional(),
+    paymentMethod: z
+      .union([
+        z.literal(''),
+        z.enum(['pix', 'boleto', 'debit_card', 'credit_card', 'cash', 'bank_transfer', 'other']),
+      ])
+      .optional(),
     status: z.enum(['planned', 'confirmed']),
     dueDate: z.string().min(1, 'Informe a data'),
     paidAt: z.string().optional(),

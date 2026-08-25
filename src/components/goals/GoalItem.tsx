@@ -9,6 +9,10 @@ import { computeGoalProgress } from '@/lib/goals'
 import { interactiveStates } from '@/lib/interactive-states'
 import { listItemVariants, EASE_SMOOTH } from '@/lib/motion'
 import { formatNumber } from '@/lib/number'
+import {
+  GOAL_PROGRESS_NOTES_MAX_LENGTH,
+  goalProgressNotesSchema,
+} from '@/lib/validation/goalProgress'
 import type { Goal, GoalProgressEntry } from '@/types/database'
 
 interface GoalItemProps {
@@ -47,7 +51,9 @@ export function GoalItem({
     event.preventDefault()
     const value = Number(amount)
     if (!value || value <= 0) return
-    onAddProgress(goal, value, notes.trim() ? notes.trim() : null)
+    const parsedNotes = goalProgressNotesSchema.safeParse(notes)
+    if (!parsedNotes.success) return
+    onAddProgress(goal, value, parsedNotes.data ? parsedNotes.data : null)
     setAmount('')
     setNotes('')
     setAddingOpen(false)
@@ -159,6 +165,7 @@ export function GoalItem({
                     placeholder="Nota (opcional)"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
+                    maxLength={GOAL_PROGRESS_NOTES_MAX_LENGTH}
                     className="w-40"
                   />
                   <button

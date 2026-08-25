@@ -1,4 +1,5 @@
 import { requireSupabase } from '@/lib/supabase'
+import { focusSessionInputSchema } from '@/lib/validation/focusSession'
 import type { FocusSession } from '@/types/database'
 
 export async function fetchFocusSessions(
@@ -24,10 +25,11 @@ export async function startFocusSession(
   userId: string,
   input: FocusSessionInput,
 ): Promise<FocusSession> {
+  const validated = focusSessionInputSchema.parse(input)
   const client = requireSupabase()
   const { data, error } = await client
     .from('focus_sessions')
-    .insert({ ...input, user_id: userId })
+    .insert({ ...validated, user_id: userId })
     .select()
     .single()
   if (error) throw error

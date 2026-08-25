@@ -27,7 +27,9 @@ function formatIcsDate(date: string): string {
 }
 
 function escapeIcsText(text: string): string {
-  return text.replace(/([,;\\])/g, '\\$1')
+  return text
+    .replace(/([,;\\])/g, '\\$1')
+    .replace(/\r\n|\r|\n/g, '\\n')
 }
 
 function buildIcsCalendar(events: IcsEvent[]): string {
