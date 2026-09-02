@@ -1,5 +1,6 @@
 import { forwardRef, type SelectHTMLAttributes } from 'react'
 import { cn } from '@/lib/cn'
+import { fieldBase, fieldError } from '@/lib/field-styles'
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string
@@ -24,12 +25,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         <select
           ref={ref}
           id={selectId}
-          className={cn(
-            'focus:border-primary-500 focus:ring-primary-500/30 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] transition outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50',
-            error &&
-              'border-error-500 focus:border-error-500 focus:ring-error-500/30',
-            className,
-          )}
+          className={cn(fieldBase, error && fieldError, className)}
           aria-invalid={error ? true : undefined}
           aria-describedby={errorId}
           {...props}

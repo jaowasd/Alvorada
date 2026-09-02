@@ -16,7 +16,7 @@ export function NotFoundPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: EASE_SMOOTH }}
       >
-        <Card className="shadow-card-lg max-w-sm p-8 text-center">
+        <Card elevated className="max-w-sm p-8 text-center">
           <h1 className="font-heading text-3xl font-bold">404</h1>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">
             Não encontramos essa página. Ela pode ter sido movida ou ainda não

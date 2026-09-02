@@ -38,7 +38,7 @@ export class ErrorBoundary extends Component<
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: EASE_SMOOTH }}
         >
-          <Card className="shadow-card-lg max-w-sm p-8 text-center">
+          <Card elevated className="max-w-sm p-8 text-center">
             <h1 className="font-heading text-2xl font-bold">Algo deu errado</h1>
             <p className="mt-2 text-sm text-[var(--color-text-muted)]">
               Encontramos um problema inesperado. Recarregar a página costuma

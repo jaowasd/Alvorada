@@ -48,7 +48,7 @@ export function AccountItem({
         </p>
         <p
           className={cn(
-            'font-heading mt-3 text-xl font-bold tabular-nums',
+            'numeric-display mt-3 text-2xl',
             balanceCents < 0 ? 'text-error-500' : 'text-[var(--color-text)]',
           )}
         >

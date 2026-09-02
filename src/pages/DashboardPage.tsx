@@ -17,14 +17,16 @@ import { ProgressRing } from '@/components/ui/ProgressRing'
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber'
 import { ConsistencyHeatmap } from '@/components/ui/ConsistencyHeatmap'
 import { ChecklistItem } from '@/components/dashboard/ChecklistItem'
-import { FocusLauncherCard } from '@/components/dashboard/FocusLauncherCard'
 import { JournalCard } from '@/components/dashboard/JournalCard'
+import { StudyTodayCard } from '@/components/dashboard/StudyTodayCard'
 import { StatTile } from '@/components/dashboard/StatTile'
 import { StatsBar } from '@/components/dashboard/StatsBar'
 import { OnboardingModal } from '@/components/onboarding/OnboardingModal'
 import { useAuth } from '@/hooks/useAuth'
+import { useDaypart } from '@/hooks/useDaypart'
 import { useDisplayName, useProfile } from '@/hooks/useProfile'
 import { buildConsistencyMap } from '@/lib/calendarGrid'
+import { DAYPART_LABELS } from '@/lib/daypart'
 import { getGreeting, getLocalDateString } from '@/lib/date'
 import { isHabitDueOnDate } from '@/lib/habits'
 import { staggerContainer } from '@/lib/motion'
@@ -270,18 +272,28 @@ export function DashboardPage() {
     tasksQuery.isError
 
   const firstName = useDisplayName()
+  const daypart = useDaypart()
 
   return (
     <PageFade className="mx-auto max-w-4xl">
-      <div className="flex flex-wrap items-start justify-between gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-6">
         <div>
-          <h1 className="font-heading text-3xl font-bold text-[var(--color-text)]">
+          {/* Legenda da fase do dia: dá nome à luz que está atrás da tela. */}
+          <p className="text-2xs mb-2 inline-flex items-center gap-1.5 font-medium tracking-[0.14em] text-[var(--color-text-muted)] uppercase">
+            <span
+              aria-hidden="true"
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ background: 'var(--dawn-to)' }}
+            />
+            {DAYPART_LABELS[daypart]}
+          </p>
+          <h1 className="font-heading text-3xl font-bold text-[var(--color-text)] sm:text-4xl">
             {getGreeting()},{' '}
             <span className="font-medium text-[var(--color-text-muted)]">
               {firstName}
             </span>
           </h1>
-          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">
             {isLoading
               ? 'Carregando seu dia…'
               : totalDue > 0
@@ -290,15 +302,15 @@ export function DashboardPage() {
           </p>
         </div>
         {totalDue > 0 && (
-          <ProgressRing percent={progressPercent} size={88} strokeWidth={8}>
-            <span className="text-lg font-bold tabular-nums">
+          <ProgressRing percent={progressPercent} size={104} strokeWidth={9}>
+            <span className="numeric-display text-xl">
               <AnimatedNumber value={progressPercent} suffix="%" />
             </span>
           </ProgressRing>
         )}
       </div>
 
-      <div className="mt-6">
+      <div className="mt-8">
         <StatsBar>
           <StatTile
             label="Sequência atual"
@@ -327,14 +339,19 @@ export function DashboardPage() {
 
       <Link
         to="/app/financas"
-        className="mt-4 flex items-center justify-between rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-bg)]"
+        className="group mt-4 flex items-center justify-between rounded-2xl border border-[var(--color-hairline)] bg-[var(--color-surface)] px-4 py-3.5 text-sm font-medium text-[var(--color-text)] [box-shadow:var(--surface-highlight)] transition-[transform,box-shadow] duration-[--duration-base] ease-[--ease-glide] hover:-translate-y-0.5 hover:[box-shadow:var(--shadow-lift)]"
       >
         <span className="flex items-center gap-2">
           <Wallet size={16} className="text-primary-600" />
           Ver Finanças
         </span>
-        <ChevronRight size={16} className="text-[var(--color-text-muted)]" />
+        <ChevronRight
+          size={16}
+          className="text-[var(--color-text-muted)] transition-transform duration-[--duration-base] ease-[--ease-glide] group-hover:translate-x-0.5"
+        />
       </Link>
+
+      <StudyTodayCard />
 
       {isLoading && (
         <p
@@ -468,14 +485,16 @@ export function DashboardPage() {
             </MotionCard>
           )}
 
-          <FocusLauncherCard />
-
           <section>
             <h2 className="mb-2 text-sm font-semibold text-[var(--color-text)]">
               Consistência
             </h2>
             <MotionCard>
-              <ConsistencyHeatmap dataByDate={consistencyMap} weeksCount={26} today={today} />
+              <ConsistencyHeatmap
+                dataByDate={consistencyMap}
+                weeksCount={26}
+                today={today}
+              />
             </MotionCard>
           </section>
 
