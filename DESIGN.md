@@ -1,87 +1,134 @@
 # DESIGN.md — Sistema de design do Alvorada
 
-Referência persistente para qualquer trabalho de UI neste repo. Documenta o sistema **como ele já é** — a maior parte já existia e estava consistente na prática, só não estava escrita em lugar nenhum. **Regra de ouro: se o código que você for gerar violar este documento, corrija antes de entregar.**
+Referência persistente para qualquer trabalho de UI neste repo. **Regra de ouro: se o código que você for gerar violar este documento, corrija antes de entregar.**
+
+## O conceito: Primeira Luz
+
+O produto se chama **Alvorada**, o logo é um nascer do sol e o app cumprimenta "Bom dia". O sistema visual parte disso: existe uma fonte de luz ambiente no topo de cada tela, e ela muda com a hora real do dia. Aparece uma vez por tela, nunca compete com o conteúdo, e é a coisa que torna esta interface impossível de confundir com um dashboard genérico.
+
+Toda a ousadia do sistema está gasta nesse único elemento. O resto — cards, listas, formulários — é deliberadamente quieto. Se for adicionar mais um efeito chamativo, provavelmente é o efeito errado.
 
 ## Cores
 
-Tokens em [src/index.css](src/index.css), light (`:root`) e dark (`:root[data-theme='dark']`). Nunca hardcode um hex — sempre `var(--color-*)` ou as classes Tailwind geradas (`text-primary-600`, `bg-error-500/10`, etc.).
+Tokens em [src/index.css](src/index.css). Nunca hardcode um hex — sempre `var(--color-*)` ou as classes Tailwind geradas (`text-primary-600`, `bg-error-500/10`).
 
-- `bg` / `surface` / `sidebar` / `border` / `text` / `text-muted` — trocam entre light/dark.
-- `primary-{50,100,300,400,500,600,700,800}` — azul da marca (`#3562f6` = 500). Sem 200/900/950 — não inventar esses steps sem necessidade real.
-- `success-{50,500,600}`, `error-{50,500}` — usados em toda a parte; sempre acompanhados de ícone ou texto, nunca só a cor sozinha transmitindo o significado.
-- `warning-{50,500}` — definidos, **reservados** (nenhum componente usa ainda). Não force um uso artificial só para "usar o token"; use quando a necessidade real aparecer.
-- `accent-{400,500}`, `health-{100,500,600}` — paletas secundárias, uso pontual.
-- **Dark mode nunca é preto puro** — `--color-bg` escuro é `#0b0d14` (cinza-azulado rico), não `#000`. Manter esse princípio em qualquer token novo.
-- Sem gradiente roxo/violeta/genérico-de-IA em lugar nenhum do site — os únicos 2 gradientes existentes são azul-sobre-azul (avatar do usuário, stroke do `ProgressRing`). Manter assim.
+- `bg` / `surface` / `surface-raised` / `sidebar` / `border` / `hairline` / `text` / `text-muted` — trocam entre light/dark.
+- `primary-{50,100,300,400,500,600,700,800}` — azul da marca (`#3562f6` = 500). Cor estrutural e interativa. Sem 200/900/950.
+- `accent-{400,500}` — o laranja do amanhecer. **Reservado para dois usos**: a luz ambiente (via `--dawn-from`/`--dawn-to`) e marcação de conquista (a chama da sequência). Não use como segunda cor de marca; ele perde o significado se aparecer em botão, link ou ícone comum.
+- `success-{50,500,600}`, `error-{50,500}` — sempre acompanhados de ícone ou texto, nunca só a cor sozinha transmitindo o significado.
+- `warning-{50,500}`, `health-{100,500,600}` — definidos, **reservados**, sem uso hoje. Não force um uso artificial.
+- **Dark mode nunca é preto puro** — `--color-bg` escuro é `#0b0d14`.
+- Sem gradiente roxo/violeta/genérico-de-IA em lugar nenhum. Os gradientes existentes são azul-sobre-azul (avatar, `ProgressRing`) e o wash de amanhecer.
+- `--color-hairline` (uma cor com alpha) substituiu `--color-border` como borda padrão de superfície. `--color-border` continua para divisores e traços que precisam ser vistos.
+
+### A luz do dia
+
+`data-daypart` no `<html>` (`dawn` | `day` | `dusk` | `night`) redefine três propriedades: `--dawn-from`, `--dawn-to`, `--dawn-intensity`. Mesmo mecanismo de `data-theme` — escrito em [public/theme-init.js](public/theme-init.js) antes da primeira pintura e mantido por [useDaypart](src/hooks/useDaypart.ts).
+
+Quem renderiza é [`<DawnWash />`](src/components/ui/DawnWash.tsx). Ele é `absolute` em `-z-10` dentro de um pai com `isolate` — **nunca `fixed`, nunca `background-attachment: fixed`**: um horizonte só existe no topo da página, e assim não há jank de background fixo no Safari mobile nem disputa de z-index.
+
+O grão fica em `body::before` a 2,5–3,5% de opacidade. Como está na camada de fundo, aparece só nas calhas entre cards e nunca cobre conteúdo. Não crie overlays de textura por cima do conteúdo.
 
 ## Tipografia
 
-- `--font-sans` (Inter) — corpo de texto.
-- `--font-heading` (Plus Jakarta Sans) — aplicada automaticamente a `h1`-`h4`.
+Três papéis, dois arquivos de fonte:
+
+| Papel    | Família                       | Onde                                       |
+| -------- | ----------------------------- | ------------------------------------------ |
+| Display  | Plus Jakarta Sans 600/700/800 | `h1`–`h4` (automático), wordmark           |
+| Corpo/UI | Geist 400/500/600             | todo o resto                               |
+| Dados    | Geist + `numeric-display`     | números que o usuário compara entre linhas |
+
+A escala vai de `text-2xs` (11px) a `text-6xl` (72px) e **cada degrau já traz seu próprio line-height e letter-spacing**. Não escreva `tracking-*` junto de um `text-*` — o valor certo já vem no token. O tracking abre nos tamanhos pequenos e fecha nos grandes; era um `-0.02em` fixo aplicado igual em 14px e 60px.
+
+**`numeric-display`** é a assinatura tipográfica: num app de acompanhamento os números _são_ o conteúdo. Sequência, minutos, aproveitamento e saldo usam ele (tabular, `-0.035em`, peso 700). Use em números que carregam a recompensa, não em qualquer dígito da tela.
+
+Rótulos de métrica são `text-2xs uppercase tracking-[0.08em]` — a caixa alta miúda é o que separa o rótulo do número sem competir com ele.
 
 ## Espaçamento
 
-Escala padrão do Tailwind (múltiplos de 4px). Nada de valores arbitrários tipo `p-[13px]` — se o espaçamento "quase encaixa" num múltiplo de 4/8, ajuste o layout em vez de forçar um valor exato.
+Escala padrão do Tailwind (múltiplos de 4px). Seções de landing respiram em `py-24`; dentro do app, blocos irmãos ficam em `gap-6`/`mt-8`. Nada de valores arbitrários tipo `p-[13px]`.
 
-## Raio de borda — 5 níveis, por propósito (não por preferência)
+## Raio de borda — 5 níveis, por propósito
 
-| Classe         | Valor | Quando usar                                                      |
-| -------------- | ----- | ---------------------------------------------------------------- |
-| `rounded-md`   | 6px   | Controles micro: checkboxes customizados                         |
-| `rounded-lg`   | 8px   | "Controle": Button, Input, Select, botão-ícone, popover/dropdown |
-| `rounded-xl`   | 12px  | "Navegação": itens de sidebar, Logo, segmented control           |
-| `rounded-2xl`  | 16px  | "Painel": Card, Modal                                            |
-| `rounded-full` | —     | Pílulas de status, avatares, badges                              |
+| Classe         | Valor | Quando usar                                               |
+| -------------- | ----- | --------------------------------------------------------- |
+| `rounded-md`   | 6px   | Controles micro: checkboxes                               |
+| `rounded-lg`   | 8px   | "Controle": Input, Select, botão-ícone, popover           |
+| `rounded-xl`   | 12px  | "Navegação": itens de sidebar, Logo, quadros de ícone     |
+| `rounded-2xl`  | 20px  | "Painel": Card padrão                                     |
+| `rounded-3xl`  | 28px  | "Herói": Card `elevated`, Modal, Bezel, ilha de navegação |
+| `rounded-full` | —     | Pílulas, avatares, badges, botões `pill`                  |
 
-Todo componente novo escolhe um desses 5. Nunca `rounded-[Npx]` arbitrário.
+Todo componente novo escolhe um desses. Nunca `rounded-[Npx]` arbitrário — a exceção é o núcleo do `Bezel`, cujo raio é calculado para ficar concêntrico com a casca.
 
-## Sombras — 3 níveis
+## Superfícies e sombras
 
-Tokens em `index.css`:
+Uma superfície do Alvorada não é um retângulo pintado: ela capta luz no topo. Isso vem de `--surface-highlight` (um `inset` branco), aplicado junto da sombra:
 
-- `--shadow-card` — cards estáticos em repouso, botão primário.
-- `--shadow-popover` — dropdowns/menus flutuantes pequenos (ex. `ItemMenu`).
-- `--shadow-card-lg` — modais e páginas de auth/erro (maior elevação do site).
+```
+[box-shadow:var(--shadow-card),var(--surface-highlight)]
+```
 
-Nunca usar `shadow-sm`/`shadow-lg` genéricos do Tailwind — sempre um desses 3 tokens.
+Tokens: `--shadow-card` (repouso) · `--shadow-popover` (menus flutuantes) · `--shadow-card-lg` (modais, cards herói) · `--shadow-lift` (hover) · `--surface-highlight`.
+
+Nunca use `shadow-sm`/`shadow-lg` genéricos do Tailwind. **Não passe `shadow-card-lg` como className para um `Card`** — use a prop `elevated`, que já traz sombra maior, raio herói e o brilho de topo juntos.
+
+O `Bezel` (casca externa + núcleo de raio concêntrico) é reservado a superfícies-herói. Aplicado em todo card, vira ruído.
+
+`backdrop-blur` só em elemento fixo, sticky pequeno (nav flutuante, folha "Mais", backdrop de modal) ou superfície isolada numa tela que não rola (o cartão de autenticação). Nunca sobre conteúdo em rolagem.
 
 ## Animação
 
-Constantes em [src/lib/motion.ts](src/lib/motion.ts) — sempre reusar, nunca redigitar valores à mão:
+Constantes em [src/lib/motion.ts](src/lib/motion.ts) — sempre reusar, nunca redigitar valores:
 
-- `EASE_SMOOTH` — curva padrão de easing (`[0.16, 1, 0.3, 1]`) para praticamente toda transição de entrada/saída.
-- `SPRING_SNAPPY` — spring para elementos que "encaixam" (ex. pílula ativa da navegação).
-- `SPRING_SOFT` — spring para interações contínuas de ponteiro (ex. `TiltCard`).
-- `fadeIn` / `fadeUp` / `listItemVariants` / `staggerContainer` — variantes de valor prontas; use `variants={x} initial="hidden" animate="show"` em vez de `initial={{...}} animate={{...}}` hand-rolled.
+- `EASE_SMOOTH` / `EASE_GLIDE` — a segunda é mais pesada, para entradas e reveals.
+- `DURATION` — `instant` / `quick` / `base` / `slow` / `ambient`. Nada de duração digitada no call site.
+- `fadeIn` / `fadeUp` / `listItemVariants` / `staggerContainer` / `staggerSection` / `revealUp` / `REVEAL_VIEWPORT`.
+- Em CSS/Tailwind: `duration-[--duration-base] ease-[--ease-glide]`.
 
-Regras (Emil Kowalski):
+Regras:
 
-- Anime só `transform`/`opacity` — nunca `width`/`height`/`top`/`left` diretamente (exceção documentada abaixo).
-- Anime com intenção: só elementos que guiam o usuário (abrir modal, feedback de clique, carregar).
-- Feedback de clique em botão = `active:scale-[0.98]` via `interactiveStates` (ver abaixo) — não usar `whileTap` do Framer Motion, o projeto usa CSS para isso.
+- Anime só `transform`, `opacity` e `filter` — nunca `width`/`height`/`top`/`left`.
+- Reveal de scroll usa `whileInView` (IntersectionObserver por baixo). **Nunca** um listener de `scroll`.
+- Feedback de clique = `active:scale-[0.98]` via `interactiveStates`, não `whileTap`.
+- Hover de superfície clicável = `-translate-y-px` (ou `-translate-y-0.5`) + `--shadow-lift`.
+
+**Conteúdo não deve depender de uma animação para aparecer.** Um bloco com `initial="hidden"` que nunca receba o `show` fica invisível — e um `hidden` com `opacity: 0` é exatamente isso. A regra para código novo: passe `initial={prefersReducedMotion ? false : 'hidden'}` no container, como faz a `LandingPage`. `SectionReveal`, `PageFade` e `AnimatedNumber` já retornam o estado estático quando `useReducedMotion()` é verdadeiro.
+
+Estado atual: as listas do app (`staggerContainer` + `listItemVariants`) ainda usam `initial="hidden"` puro. Não é um bug visível — o padrão do Framer Motion é `reducedMotion="never"`, então a animação roda normalmente mesmo com movimento reduzido ligado. É fragilidade, não falha: se a animação não completar por qualquer motivo, a lista fica em branco. Vale migrar quando encostar em cada página.
+
+O `@media (prefers-reduced-motion)` do CSS **não** alcança o Framer Motion — trate em JS.
+
+**Armadilha: `animate` do Framer sobrescreve `opacity` do `style`.** Se um elemento tem `style={{ opacity: 'calc(...)' }}` e ao mesmo tempo `animate={{ opacity: 1 }}`, o valor do style é ignorado e o elemento termina em opacidade 1. Numa cena de camadas isso estoura tudo de uma vez. Separe: transformação e fade de entrada no invólucro, opacidade de intensidade num filho. Ver `SceneLayer` em [AuthScene.tsx](src/components/auth/AuthScene.tsx).
+
+**Armadilha: profundidade em Z encolhe a camada.** Um elemento com `translateZ(-320px)` dentro de uma `perspective` de 1400px aparece a 81% do tamanho — e aí `inset-0` deixa de cobrir a tela e as bordas do retângulo ficam visíveis. Compense com `scale: (perspective + |depth|) / perspective`.
 
 ## Estados de interação
 
-[src/lib/interactive-states.ts](src/lib/interactive-states.ts) exporta `interactiveStates` — aplique em **todo** elemento clicável (`<button>`, links que agem como botão): dá `active:scale-[0.98]` + anel de `focus-visible` + transição. `button-variants.ts` já usa. Qualquer `<button>` cru novo deve importar e aplicar essa mesma constante.
+[src/lib/interactive-states.ts](src/lib/interactive-states.ts) exporta `interactiveStates` — aplique em **todo** elemento clicável. [src/lib/field-styles.ts](src/lib/field-styles.ts) faz o mesmo para `Input`/`Select`.
 
-`Input`/`Select` mantêm `focus:` (não `focus-visible:`) — correto para campo de texto, mostra o anel mesmo em clique de mouse. Todo controle desabilitado precisa de `disabled:opacity-50 disabled:cursor-not-allowed` (ou `disabled:pointer-events-none` quando fizer sentido).
+Existe **uma** linguagem de foco no app: `focus-visible:outline-2 outline-offset-2 outline-primary-500`. Campos de texto casam com `:focus-visible` mesmo em clique de mouse, então não há motivo para um segundo tratamento. Todo controle desabilitado precisa de `disabled:opacity-50 disabled:cursor-not-allowed`.
 
 ## Componentes compartilhados
 
-Antes de reimplementar um padrão visual, verifique se já existe em `src/components/ui/`:
+Antes de reimplementar um padrão visual, verifique `src/components/ui/`:
 
-- `Card`/`MotionCard`, `Modal` (focus trap + Escape + clique-fora já implementados), `Button`, `Input`, `Select`, `ItemMenu` (menu "⋮ mais ações"), `Badge` (pílula de status), `ProgressRing`, `AnimatedNumber`, `ThemeToggle`, `TiltCard`, `PageFade`.
-- `cn()` ([src/lib/cn.ts](src/lib/cn.ts)) usa `tailwind-merge` — pode passar `className` para sobrescrever default com segurança, classes conflitantes resolvem pela última que "ganha" de verdade, não por ordem de geração do CSS.
+`Card`/`MotionCard` (prop `elevated`), `Bezel`, `Modal`, `ConfirmDialog`, `Button` (`variant` · `size` · `pill`), `Input`, `Select`, `Badge`, `EmptyState`, `ItemMenu`, `PageFade`, `SectionReveal`, `DawnWash`, `ProgressRing`, `AnimatedNumber`, `ConsistencyHeatmap`, `ThemeToggle`, `TiltCard`.
+
+Não existe Skeleton, Toast nem Tabs: carregamento é `<p role="status" aria-live="polite">Carregando…</p>`, sucesso é `useInlineFeedback`, abas são um array de `<button>` (`rounded-lg`, ativo em `bg-primary-500/10 text-primary-600`).
 
 ## Acessibilidade
 
-- Todo botão/link só-ícone precisa de `aria-label` descritivo (já é o padrão em 100% dos casos existentes — manter).
-- Estados de carregamento usam `role="status" aria-live="polite"` no texto "Carregando…".
-- `Modal` já implementa focus trap completo (foco entra ao abrir, Tab preso dentro, foco volta ao elemento que abriu ao fechar) — não precisa reimplementar em cada uso.
-- Não há `<img>` no projeto (tudo é ícone Lucide/SVG/avatar CSS) — se algum dia entrar uma imagem raster, ela precisa de `alt` descritivo.
+- Todo botão/link só-ícone precisa de `aria-label` descritivo.
+- Estados de carregamento usam `role="status" aria-live="polite"`.
+- `Modal` já implementa focus trap completo — não reimplemente.
+- Nada que atualize por segundo pode ficar dentro de uma região `aria-live` (ver o cronômetro em `StudyTimerCard`: `role="timer"` + `aria-live="off"`, com um `role="status"` separado só para início e fim).
+- Cor sozinha nunca carrega significado: barra colorida sempre acompanha o número.
 
 ## Exceções documentadas (não são bugs)
 
-- **Mockup da Landing Page** ([src/pages/LandingPage.tsx](src/pages/LandingPage.tsx), `DashboardPreview`/`LaptopMockup`): usa cores `slate-*` fixas em vez dos tokens `var(--color-*)`. Intencional — é um "screenshot" fixo do produto em tema claro dentro de uma moldura de laptop; acompanhar o tema do visitante prejudicaria o contraste dentro da moldura escura. Não trocar pelos tokens.
-- **Colapso do submenu Finanças** (`AppShell.tsx`): anima `height` diretamente (não é `transform`/`opacity` puro). Baixa frequência (abre 1x ao entrar em Finanças), sem alternativa simples sem complexidade extra. Aceito como está.
-- **`Badge` da Landing Page** (chip de marketing, `rounded-full` grande, 2 tons fixos) é intencionalmente separado do componente `Badge` de `src/components/ui/` (pílula de status) — propósitos visuais diferentes, não deve ser unificado.
+- **Preview da Landing** ([src/pages/LandingPage.tsx](src/pages/LandingPage.tsx), `AppPreview`): usa cores `slate-*` fixas em vez dos tokens. Intencional — é um "screenshot" do produto em tema claro dentro de uma moldura; acompanhar o tema do visitante arruinaria o contraste dentro dela.
+- **Colapso do submenu na sidebar** (`AppShell.tsx`): anima `height` diretamente. Baixa frequência, sem alternativa simples. Aceito.
+- **Cores de matéria e de categoria** vêm do usuário e entram por `style={{ backgroundColor }}` — é dado, não token.
+- **A cena de autenticação** ([AuthScene.tsx](src/components/auth/AuthScene.tsx)) é `fixed inset-0`, não `absolute` como o `DawnWash`. A regra do `DawnWash` existe porque ele é um horizonte no topo de uma página que rola; a cena de auth ocupa a viewport inteira numa tela que não rola, então `fixed` é o correto — e ela precisa ficar parada se o teclado do celular empurrar o layout.

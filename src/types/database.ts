@@ -251,6 +251,7 @@ export interface FocusSession {
   id: string
   user_id: string
   task_id: string | null
+  subject_id: string | null
   label: string | null
   duration_minutes: number
   started_at: string
@@ -300,6 +301,41 @@ export interface FinanceRecurringTransaction {
   last_generated_date: string | null
   is_active: boolean
   archived_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface StudySubject {
+  id: string
+  user_id: string
+  name: string
+  color: string
+  weekly_goal_minutes: number | null
+  archived_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type StudyExamKind = 'simulado' | 'prova' | 'exercicios'
+
+export interface StudyExamRecord {
+  id: string
+  user_id: string
+  subject_id: string | null
+  title: string
+  kind: StudyExamKind
+  exam_date: string
+  correct_count: number
+  total_questions: number
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface StudySettings {
+  user_id: string
+  weekly_goal_minutes: number | null
+  exam_date: string | null
   created_at: string
   updated_at: string
 }

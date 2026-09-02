@@ -55,12 +55,23 @@ export function calculateHabitStreak(
   return scanStreak(completedSet, isDue, today)
 }
 
+/**
+ * Streak de qualquer coisa devida todo dia: só as datas concluídas importam,
+ * nenhum dia é "não programado".
+ */
+export function calculateDailyStreak(
+  completedDates: string[],
+  today: string,
+): StreakStats {
+  return scanStreak(new Set(completedDates), () => true, today)
+}
+
 /** Streak da rotina matinal: conta os dias em que TODAS as etapas atuais foram concluídas. */
 export function calculateRoutineStreak(
   fullyCompletedDates: string[],
   today: string,
 ): StreakStats {
-  return scanStreak(new Set(fullyCompletedDates), () => true, today)
+  return calculateDailyStreak(fullyCompletedDates, today)
 }
 
 /**

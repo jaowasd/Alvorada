@@ -46,6 +46,30 @@ código.
 - **Qualquer migration nova que adicione uma coluna de foreign key numa
   tabela com RLS precisa repetir esse padrão** — é o jeito de não
   reintroduzir esse mesmo gap.
+- A migration `0024` (módulo de estudos) aplicou o padrão em duas frentes:
+  `study_exam_records.subject_id` já nasceu com o `exists (...)` no INSERT e
+  no UPDATE, e `focus_sessions` teve as duas policies recriadas para checar
+  posse de `subject_id` (a coluna nova) além de `task_id`. O UPDATE de
+  `focus_sessions` também ganhou `with check` explícito — o de `0012` só
+  tinha `using`, o que era inofensivo enquanto nenhuma FK era editável e
+  virava gap no instante em que `subject_id` passou a ser: sem `with check`,
+  o Postgres reusa o `using`, que só revalida `user_id`, e um update poderia
+  apontar uma sessão própria para a matéria de outra pessoa.
+- `focus_sessions` ganhou policy de DELETE (antes só select/insert/update):
+  com registro manual de sessão, apagar um lançamento errado passou a ser
+  uma operação legítima do dono.
+- As três tabelas novas (`study_subjects`, `study_exam_records`,
+  `study_settings`) referenciam `auth.users` com `on delete cascade`, então
+  `delete_own_account()` (`0008`) continua apagando tudo sem precisar de
+  ajuste.
+- `study_settings` **não** tem policy de DELETE, de propósito: é uma linha
+  1:1 com o usuário, criada sob demanda e removida junto com a conta. O
+  padrão do Postgres é negar o que nenhuma policy permite.
+- `0024` deliberadamente **não** altera `handle_new_user`: criar a linha de
+  `study_settings` num trigger `security definer` em `auth.users` faria uma
+  falha ali derrubar o próprio cadastro. A linha nasce no cliente
+  (`fetchOrCreateStudySettings`), o que também cobre contas antigas sem
+  backfill.
 
 ## Tokens de acesso público (rotina compartilhada e `.ics`)
 
@@ -88,6 +112,22 @@ texto livre restantes que ainda não tinham limite em nenhuma camada:
 `focus_sessions.label` (120). Onde já existia Zod client-side, o valor do
 `check` no banco é o mesmo — o objetivo era o banco concordar com a
 validação que já existia, não escolher limites novos.
+
+A migration `0024` seguiu as mesmas 3 camadas para o módulo de estudos:
+`study_subjects.name` (60), `study_exam_records.title` (120) / `notes` (500),
+e limites numéricos que não são só de tamanho — `total_questions` entre 1 e
+1000, `correct_count >= 0` e a constraint nomeada
+`study_exam_records_correct_within_total` (`correct_count <=
+total_questions`), que é o que garante que o aproveitamento nunca passa de
+100% mesmo se o cliente for contornado. `study_subjects.color` valida o hex
+com a mesma regex do Zod (`^#[0-9a-fA-F]{6}$`), fechando paleta → Zod →
+banco.
+
+O teto de `focus_sessions.duration_minutes` subiu de 240 para 600 minutos:
+240 era política do cronômetro pomodoro que virou limite de dado em `0012`, e
+o registro manual de uma sessão passada de 8h é legítimo. O cronômetro
+mantém o limite antigo em código (`FOCUS_TIMER_MAX_MINUTES = 120`), separado
+do limite do banco.
 
 ## Senha e autenticação
 

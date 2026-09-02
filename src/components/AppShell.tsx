@@ -6,6 +6,7 @@ import {
   BookOpen,
   Calendar,
   Crown,
+  GraduationCap,
   HeartPulse,
   ListChecks,
   LogOut,
@@ -19,15 +20,18 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { Logo } from '@/components/Logo'
+import { DawnWash } from '@/components/ui/DawnWash'
 import { PremiumBadge } from '@/components/premium/PremiumBadge'
 import { ReminderBell } from '@/components/reminders/ReminderBell'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { useDisplayName } from '@/hooks/useProfile'
 import { useAuth } from '@/hooks/useAuth'
+import { useDaypart } from '@/hooks/useDaypart'
 import { usePlan } from '@/hooks/usePlan'
 import { cn } from '@/lib/cn'
 import { interactiveStates } from '@/lib/interactive-states'
 import { EASE_SMOOTH, SPRING_SNAPPY } from '@/lib/motion'
+import { STUDY_SUB_ITEMS } from '@/lib/studyNav'
 
 interface NavItem {
   to: string
@@ -51,6 +55,7 @@ const navItems: NavItem[] = [
   { to: '/app/habitos', label: 'Hábitos', icon: HeartPulse, end: false },
   { to: '/app/metas', label: 'Metas', icon: Target, end: false },
   { to: '/app/tarefas', label: 'Tarefas', icon: ListChecks, end: false },
+  { to: '/app/estudos', label: 'Estudos', icon: GraduationCap, end: false },
   { to: '/app/diario', label: 'Diário', icon: BookOpen, end: false },
   { to: '/app/financas', label: 'Finanças', icon: Wallet, end: false },
 ]
@@ -72,6 +77,7 @@ const moreMenuItems: NavItem[] = [
   { to: '/app/habitos', label: 'Hábitos', icon: HeartPulse },
   { to: '/app/metas', label: 'Metas', icon: Target },
   { to: '/app/tarefas', label: 'Tarefas', icon: ListChecks },
+  { to: '/app/estudos', label: 'Estudos', icon: GraduationCap },
   { to: '/app/diario', label: 'Diário', icon: BookOpen },
   { to: '/app/perfil', label: 'Perfil', icon: UserRound },
   { to: '/app/premium', label: 'Meu plano', icon: Crown },
@@ -103,6 +109,16 @@ const financeSubItems: SubNavItem[] = [
   },
   { to: '/app/financas/configuracoes', label: 'Configurações', end: false },
 ]
+
+/**
+ * Seções que expandem sub-itens na sidebar. Antes isso era um `if` fixo em
+ * '/app/financas' espalhado por quatro pontos do arquivo; com o mapa, uma
+ * seção nova só precisa de uma entrada aqui.
+ */
+const subItemsBySection: Record<string, SubNavItem[]> = {
+  '/app/financas': financeSubItems,
+  '/app/estudos': STUDY_SUB_ITEMS,
+}
 
 function SidebarLink({
   to,
@@ -157,12 +173,16 @@ function SidebarSubLink({
   label,
   premium,
   showPremiumLock,
+  layoutId,
 }: {
   to: string
   end?: boolean
   label: string
   premium?: boolean
   showPremiumLock?: boolean
+  /** Um por seção: duas listas de sub-itens nunca coexistem, e compartilhar
+   * o mesmo layoutId faria a pílula animar entre elementos desmontados. */
+  layoutId: string
 }) {
   return (
     <NavLink to={to} end={end} className="relative block">
@@ -177,7 +197,7 @@ function SidebarSubLink({
         >
           {isActive && (
             <motion.span
-              layoutId="financas-sub-active-pill"
+              layoutId={layoutId}
               className="bg-primary-500/10 absolute inset-0 rounded-lg"
               transition={SPRING_SNAPPY}
             />
@@ -231,6 +251,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const displayName = useDisplayName()
   const plan = usePlan()
   const isPremium = plan === 'premium'
+  // Mantém data-daypart no <html> fresco enquanto a aba fica aberta.
+  useDaypart()
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
 
   const isInMoreSection = moreMenuItems.some((item) =>
@@ -244,13 +266,13 @@ export function AppShell({ children }: { children: ReactNode }) {
         : location.pathname.startsWith(item.to),
     ) ?? navItems[0]
 
-  const isInFinancas = currentItem.to === '/app/financas'
-  const currentFinanceSubItem = isInFinancas
-    ? (financeSubItems.find((item) =>
+  const activeSubItems = subItemsBySection[currentItem.to] ?? null
+  const currentSubItem = activeSubItems
+    ? (activeSubItems.find((item) =>
         item.end
           ? location.pathname === item.to
           : location.pathname.startsWith(item.to),
-      ) ?? financeSubItems[0])
+      ) ?? activeSubItems[0])
     : null
   const isInPerfil = location.pathname.startsWith('/app/perfil')
   const isInConfiguracoes = location.pathname.startsWith('/app/configuracoes')
@@ -261,26 +283,28 @@ export function AppShell({ children }: { children: ReactNode }) {
       ? 'Configurações'
       : isInPremium
         ? 'Meu plano'
-        : (currentFinanceSubItem?.label ?? currentItem.label)
+        : (currentSubItem?.label ?? currentItem.label)
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
-      <div className="mx-auto flex max-w-[1400px]">
-        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-sidebar)] px-4 py-5 sm:flex">
+    <div className="isolate min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+      <DawnWash />
+      <div className="relative mx-auto flex max-w-[1400px]">
+        <aside className="sticky top-0 isolate hidden h-screen w-64 shrink-0 flex-col border-r border-[var(--color-hairline)] bg-[var(--color-sidebar)] px-4 py-5 sm:flex">
+          <DawnWash scale="panel" />
           <NavLink to="/app" end className="px-2">
             <Logo />
           </NavLink>
 
           <nav className="mt-8 flex flex-1 flex-col gap-1">
-            <p className="px-3 pb-1 text-xs font-semibold tracking-wide text-[var(--color-text-muted)] uppercase">
+            <p className="text-2xs px-3 pb-2 font-semibold tracking-[0.14em] text-[var(--color-text-muted)] uppercase">
               Menu
             </p>
             {navItems.map((item) => (
               <div key={item.to}>
                 <SidebarLink {...item} showPremiumLock={!isPremium} />
-                {item.to === '/app/financas' && (
+                {subItemsBySection[item.to] && (
                   <AnimatePresence initial={false}>
-                    {isInFinancas && (
+                    {currentItem.to === item.to && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
@@ -289,10 +313,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                         className="overflow-hidden"
                       >
                         <div className="flex flex-col gap-0.5 py-1 pl-8">
-                          {financeSubItems.map((subItem) => (
+                          {subItemsBySection[item.to].map((subItem) => (
                             <SidebarSubLink
                               key={subItem.to}
                               {...subItem}
+                              layoutId={`sub-active-pill-${item.to}`}
                               showPremiumLock={!isPremium}
                             />
                           ))}
@@ -348,13 +373,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </aside>
 
-        <div className="min-w-0 flex-1 pb-20 sm:pb-0">
-          <header className="hidden items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface)] px-8 py-4 sm:flex">
+        <div className="min-w-0 flex-1 pb-28 sm:pb-0">
+          <header className="hidden items-center justify-between border-b border-[var(--color-hairline)] px-8 py-5 sm:flex">
             <div>
-              <p className="text-xs text-[var(--color-text-muted)]">
-                Alvorada{isInFinancas ? ' / Finanças' : ''}
+              <p className="text-2xs font-medium tracking-[0.12em] text-[var(--color-text-muted)] uppercase">
+                Alvorada{activeSubItems ? ` · ${currentItem.label}` : ''}
               </p>
-              <h2 className="font-heading text-sm font-semibold text-[var(--color-text)]">
+              <h2 className="font-heading mt-0.5 text-lg font-bold text-[var(--color-text)]">
                 {headerTitle}
               </h2>
             </div>
@@ -372,7 +397,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           </header>
 
-          <header className="flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 sm:hidden">
+          <header className="flex items-center justify-between border-b border-[var(--color-hairline)] px-4 py-3 sm:hidden">
             <Logo size={30} />
             <div className="flex items-center gap-2">
               <ReminderBell />
@@ -423,7 +448,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 12 }}
                 transition={{ duration: 0.18, ease: EASE_SMOOTH }}
-                className="shadow-popover fixed inset-x-0 bottom-16 z-30 rounded-t-2xl border-t border-[var(--color-border)] bg-[var(--color-surface)] p-2 sm:hidden"
+                className="fixed inset-x-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-30 rounded-3xl border border-[var(--color-hairline)] bg-[var(--color-surface)]/95 p-2 [box-shadow:var(--shadow-card-lg)] backdrop-blur-xl sm:hidden"
               >
                 {moreMenuItems.map(({ to, label, icon: Icon, premium }) => (
                   <NavLink
@@ -452,43 +477,61 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
         </AnimatePresence>
 
-        <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-[var(--color-border)] bg-[var(--color-surface)] sm:hidden">
-          {mobileFixedItems.map(({ to, label, icon: Icon, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              onClick={() => setMoreMenuOpen(false)}
-              className={({ isActive }) =>
-                cn(
-                  'flex flex-1 flex-col items-center gap-1 py-2 text-xs font-medium transition-colors',
-                  isActive
-                    ? 'text-primary-600'
-                    : 'text-[var(--color-text-muted)]',
-                )
-              }
+        {/*
+          Ilha flutuante em vez da barra colada de ponta a ponta. `pb-[env(...)]`
+          respeita a home indicator do iPhone; o blur só existe aqui, num
+          elemento fixo e pequeno, nunca sobre conteúdo em rolagem.
+        */}
+        <div className="fixed inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:hidden">
+          <nav className="flex w-full max-w-sm items-center gap-1 rounded-full border border-[var(--color-hairline)] bg-[var(--color-surface)]/85 p-1.5 [box-shadow:var(--shadow-card-lg),var(--surface-highlight)] backdrop-blur-xl">
+            {mobileFixedItems.map(({ to, label, icon: Icon, end }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={end}
+                onClick={() => setMoreMenuOpen(false)}
+                className="relative flex-1"
+              >
+                {({ isActive }) => (
+                  <span
+                    className={cn(
+                      'text-2xs relative flex flex-col items-center gap-0.5 rounded-full px-2 py-2 font-medium transition-colors',
+                      isActive
+                        ? 'text-primary-600'
+                        : 'text-[var(--color-text-muted)]',
+                    )}
+                  >
+                    {isActive && (
+                      <motion.span
+                        layoutId="mobile-nav-pill"
+                        className="bg-primary-500/10 absolute inset-0 rounded-full"
+                        transition={SPRING_SNAPPY}
+                      />
+                    )}
+                    <Icon size={19} className="relative z-10" />
+                    <span className="relative z-10">{label}</span>
+                  </span>
+                )}
+              </NavLink>
+            ))}
+            <button
+              type="button"
+              onClick={() => setMoreMenuOpen((open) => !open)}
+              aria-haspopup="true"
+              aria-expanded={moreMenuOpen}
+              className={cn(
+                'text-2xs relative flex flex-1 flex-col items-center gap-0.5 rounded-full px-2 py-2 font-medium',
+                interactiveStates,
+                isInMoreSection || moreMenuOpen
+                  ? 'text-primary-600'
+                  : 'text-[var(--color-text-muted)]',
+              )}
             >
-              <Icon size={20} />
-              {label}
-            </NavLink>
-          ))}
-          <button
-            type="button"
-            onClick={() => setMoreMenuOpen((open) => !open)}
-            aria-haspopup="true"
-            aria-expanded={moreMenuOpen}
-            className={cn(
-              'flex flex-1 flex-col items-center gap-1 py-2 text-xs font-medium',
-              interactiveStates,
-              isInMoreSection || moreMenuOpen
-                ? 'text-primary-600'
-                : 'text-[var(--color-text-muted)]',
-            )}
-          >
-            <MoreHorizontal size={20} />
-            Mais
-          </button>
-        </nav>
+              <MoreHorizontal size={19} />
+              Mais
+            </button>
+          </nav>
+        </div>
       </div>
     </div>
   )

@@ -28,22 +28,22 @@ export function FinanceStatTile({
   tone = 'default',
 }: FinanceStatTileProps) {
   return (
-    <div className="flex flex-1 items-center gap-3 px-4 py-4 sm:px-6">
+    <div className="group flex flex-1 items-center gap-3 px-4 py-5 sm:px-6">
       <div
         className={cn(
-          'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
+          'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-transform duration-[--duration-base] ease-[--ease-glide] group-hover:scale-105',
           TONE_ICON[tone],
         )}
       >
         <Icon size={16} />
       </div>
       <div className="min-w-0">
-        <p className="truncate text-xs font-medium text-[var(--color-text-muted)]">
+        <p className="text-2xs truncate font-medium tracking-[0.08em] text-[var(--color-text-muted)] uppercase">
           {label}
         </p>
         <p
           className={cn(
-            'font-heading text-xl font-bold tabular-nums',
+            'numeric-display mt-0.5 text-2xl sm:text-3xl',
             TONE_TEXT[tone],
           )}
         >

@@ -204,7 +204,7 @@ export function ContasPage() {
           </p>
           <p
             className={cn(
-              'font-heading mt-1 text-2xl font-bold tabular-nums',
+              'numeric-display mt-1.5 text-3xl',
               totalBalance < 0 ? 'text-error-500' : 'text-[var(--color-text)]',
             )}
           >

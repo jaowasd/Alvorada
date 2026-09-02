@@ -36,7 +36,7 @@ export function PricingTable({
   return (
     <div className={cn('grid gap-6 sm:grid-cols-2', className)}>
       <TiltCard tiltStrength={4} className="h-full">
-        <Card className="shadow-card flex h-full flex-col p-8 text-left">
+        <Card className="flex h-full flex-col p-8 text-left">
           <h3 className="text-lg font-semibold text-[var(--color-text)]">
             Free
           </h3>
@@ -63,7 +63,10 @@ export function PricingTable({
       </TiltCard>
 
       <TiltCard tiltStrength={4} className="h-full">
-        <Card className="shadow-card-lg border-primary-600 relative flex h-full flex-col border-2 p-8 text-left">
+        <Card
+          elevated
+          className="border-primary-600 relative flex h-full flex-col border-2 p-8 text-left"
+        >
           <span className="bg-primary-600 absolute -top-3 left-8 inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold text-white">
             <Crown size={12} />
             Recomendado

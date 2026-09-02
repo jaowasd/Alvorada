@@ -60,6 +60,31 @@ const ConfiguracoesPage = lazy(() =>
 const PremiumPage = lazy(() =>
   import('@/pages/PremiumPage').then((m) => ({ default: m.PremiumPage })),
 )
+const EstudosLayout = lazy(() =>
+  import('@/pages/estudos/EstudosLayout').then((m) => ({
+    default: m.EstudosLayout,
+  })),
+)
+const EstudosVisaoGeralPage = lazy(() =>
+  import('@/pages/estudos/EstudosVisaoGeralPage').then((m) => ({
+    default: m.EstudosVisaoGeralPage,
+  })),
+)
+const MateriasPage = lazy(() =>
+  import('@/pages/estudos/MateriasPage').then((m) => ({
+    default: m.MateriasPage,
+  })),
+)
+const SessoesPage = lazy(() =>
+  import('@/pages/estudos/SessoesPage').then((m) => ({
+    default: m.SessoesPage,
+  })),
+)
+const ProvasPage = lazy(() =>
+  import('@/pages/estudos/ProvasPage').then((m) => ({
+    default: m.ProvasPage,
+  })),
+)
 const FinancasLayout = lazy(() =>
   import('@/pages/financas/FinancasLayout').then((m) => ({
     default: m.FinancasLayout,
@@ -166,6 +191,12 @@ export function AppRouter() {
             <Route path="metas" element={<MetasPage />} />
             <Route path="tarefas" element={<TarefasPage />} />
             <Route path="diario" element={<DiarioPage />} />
+            <Route path="estudos" element={<EstudosLayout />}>
+              <Route index element={<EstudosVisaoGeralPage />} />
+              <Route path="materias" element={<MateriasPage />} />
+              <Route path="sessoes" element={<SessoesPage />} />
+              <Route path="provas" element={<ProvasPage />} />
+            </Route>
             <Route path="perfil" element={<PerfilPage />} />
             <Route path="premium" element={<PremiumPage />} />
             <Route path="configuracoes" element={<ConfiguracoesPage />} />

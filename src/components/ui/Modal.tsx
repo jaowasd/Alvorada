@@ -64,7 +64,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.15 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
     >
       <motion.div
         ref={dialogRef}
@@ -79,7 +79,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
         transition={{ duration: 0.18, ease: EASE_SMOOTH }}
         className="w-full max-w-md outline-none"
       >
-        <Card className="shadow-card-lg max-h-[85vh] overflow-y-auto p-6">
+        <Card elevated className="max-h-[85vh] overflow-y-auto p-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text)]">
               {title}

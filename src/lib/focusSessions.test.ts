@@ -7,6 +7,7 @@ function makeSession(overrides: Partial<FocusSession> = {}): FocusSession {
     id: 's1',
     user_id: 'user-1',
     task_id: null,
+    subject_id: null,
     label: null,
     duration_minutes: 25,
     started_at: '2026-08-24T10:00:00.000Z',

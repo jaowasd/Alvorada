@@ -37,7 +37,7 @@ export function PremiumGate({
         {children}
       </div>
       <div className="absolute inset-0 flex items-center justify-center p-4">
-        <Card className="shadow-card-lg max-w-sm p-6 text-center">
+        <Card elevated className="max-w-sm p-6 text-center">
           <div className="bg-primary-500/10 text-primary-600 mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full">
             <Lock size={22} />
           </div>

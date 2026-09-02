@@ -19,7 +19,7 @@ export default defineConfig({
         description:
           'Organize sua rotina matinal, hábitos, tarefas e finanças num só lugar.',
         theme_color: '#2648e0',
-        background_color: '#f4f5f9',
+        background_color: '#f5f6fb',
         display: 'standalone',
         start_url: '/app',
         icons: [

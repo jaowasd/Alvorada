@@ -10,12 +10,21 @@ import {
   fetchRoutineSteps,
 } from '@/lib/queries/routines'
 import { fetchTasks } from '@/lib/queries/tasks'
+import { fetchGoals, fetchAllProgressEntries } from '@/lib/queries/goals'
+import { fetchAllJournalEntries } from '@/lib/queries/journal'
+import { fetchFocusSessions } from '@/lib/queries/focusSessions'
+import { fetchAllStudySubjects } from '@/lib/queries/studySubjects'
+import { fetchStudyExamRecords } from '@/lib/queries/studyExamRecords'
 import { fetchFinanceAccounts } from '@/lib/queries/financas/accounts'
 import { fetchFinanceCategories } from '@/lib/queries/financas/categories'
 import { fetchRecurringTransactions } from '@/lib/queries/financas/recurring'
 import { fetchTransactions } from '@/lib/queries/financas/transactions'
 
-/** Junta todos os dados do usuário (perfil, rotina, hábitos, tarefas, finanças) num único objeto exportável. */
+/**
+ * Junta todos os dados do usuário num único objeto exportável. A lista cobre
+ * cada tabela que guarda conteúdo criado por ele — uma exportação parcial não
+ * cumpre o propósito (portabilidade), então tabela nova entra aqui também.
+ */
 export async function buildUserDataExport(userId: string) {
   const [
     profile,
@@ -23,6 +32,12 @@ export async function buildUserDataExport(userId: string) {
     habits,
     habitCompletions,
     routine,
+    goals,
+    goalProgressEntries,
+    journalEntries,
+    focusSessions,
+    studySubjects,
+    studyExamRecords,
     financeAccounts,
     financeCategories,
     financeTransactions,
@@ -33,6 +48,12 @@ export async function buildUserDataExport(userId: string) {
     fetchHabits(userId),
     fetchAllHabitCompletions(userId),
     fetchOrCreateActiveRoutine(userId),
+    fetchGoals(userId),
+    fetchAllProgressEntries(userId),
+    fetchAllJournalEntries(userId),
+    fetchFocusSessions(userId),
+    fetchAllStudySubjects(userId),
+    fetchStudyExamRecords(userId),
     fetchFinanceAccounts(userId),
     fetchFinanceCategories(),
     fetchTransactions(userId),
@@ -56,6 +77,12 @@ export async function buildUserDataExport(userId: string) {
     routine,
     routine_steps: routineSteps,
     routine_completions: routineCompletions,
+    goals,
+    goal_progress_entries: goalProgressEntries,
+    journal_entries: journalEntries,
+    focus_sessions: focusSessions,
+    study_subjects: studySubjects,
+    study_exam_records: studyExamRecords,
     finance_accounts: financeAccounts,
     finance_categories: financeCategories.filter(
       (category) => !category.is_system,

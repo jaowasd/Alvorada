@@ -1,9 +1,55 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-sans: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+  /*
+   * Três papéis tipográficos:
+   *   heading — Plus Jakarta Sans, títulos e wordmark
+   *   sans    — Geist, corpo e UI
+   *   numeric — Geist com tabular-nums, para números que o usuário compara
+   *             entre linhas (sequências, minutos, valores, percentuais)
+   */
+  --font-sans: 'Geist', system-ui, 'Segoe UI', Roboto, sans-serif;
   --font-heading:
-    'Plus Jakarta Sans', 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+    'Plus Jakarta Sans', 'Geist', system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  /*
+   * Escala tipográfica com tracking pareado. O tracking varia com o tamanho:
+   * texto miúdo precisa respirar, display precisa fechar. Antes havia um
+   * único -0.02em aplicado igual em 14px e em 60px.
+   */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --text-2xs--letter-spacing: 0.01em;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.125rem;
+  --text-xs--letter-spacing: 0.005em;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.375rem;
+  --text-sm--letter-spacing: 0em;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-base--letter-spacing: -0.005em;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.625rem;
+  --text-lg--letter-spacing: -0.01em;
+  --text-xl: 1.375rem;
+  --text-xl--line-height: 1.75rem;
+  --text-xl--letter-spacing: -0.015em;
+  --text-2xl: 1.75rem;
+  --text-2xl--line-height: 2.125rem;
+  --text-2xl--letter-spacing: -0.02em;
+  --text-3xl: 2.25rem;
+  --text-3xl--line-height: 2.5rem;
+  --text-3xl--letter-spacing: -0.025em;
+  --text-4xl: 3rem;
+  --text-4xl--line-height: 1.1;
+  --text-4xl--letter-spacing: -0.03em;
+  --text-5xl: 3.75rem;
+  --text-5xl--line-height: 1.05;
+  --text-5xl--letter-spacing: -0.035em;
+  --text-6xl: 4.5rem;
+  --text-6xl--line-height: 1;
+  --text-6xl--letter-spacing: -0.04em;
 
   --color-primary-50: #eff4ff;
   --color-primary-100: #dbe6fe;
@@ -29,21 +75,87 @@
   --color-error-50: #fef3f2;
   --color-error-500: #dc2626;
 
+  /*
+   * Raios. O tier "painel" subiu de 16px para 20px (e 28px no herói) — a
+   * curva mais aberta é o que separa um card de software de um objeto.
+   */
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.75rem;
+
+  /*
+   * Sombras. As três originais continuam (usadas em todo o app) e ganham
+   * companhia: `lift` para hover e `inset-hi` para o brilho de topo que faz
+   * uma superfície parecer captar luz em vez de ser um retângulo pintado.
+   */
   --shadow-card:
     0 1px 2px rgba(18, 22, 40, 0.04), 0 8px 20px -6px rgba(18, 22, 40, 0.08);
   --shadow-popover:
     0 2px 4px rgba(18, 22, 40, 0.06), 0 10px 24px -8px rgba(18, 22, 40, 0.12);
   --shadow-card-lg:
     0 2px 4px rgba(18, 22, 40, 0.04), 0 16px 40px -12px rgba(18, 22, 40, 0.14);
+  --shadow-lift:
+    0 2px 4px rgba(18, 22, 40, 0.05), 0 18px 36px -12px rgba(18, 22, 40, 0.16);
+  --shadow-inset-hi: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  /* Movimento. Antes cada call site digitava a própria duração. */
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-glide: cubic-bezier(0.32, 0.72, 0, 1);
+  --duration-instant: 120ms;
+  --duration-quick: 180ms;
+  --duration-base: 280ms;
+  --duration-slow: 480ms;
+  --duration-ambient: 800ms;
 }
 
 :root {
   --color-bg: #f5f6fb;
   --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
   --color-sidebar: #ffffff;
   --color-border: #e6e8f0;
+  --color-hairline: rgba(18, 22, 40, 0.07);
   --color-text: #12141f;
   --color-text-muted: #6b7086;
+
+  /* Brilho de topo das superfícies: forte no claro, quase nulo no escuro. */
+  --surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --grain-opacity: 0.025;
+
+  /*
+   * Primeira Luz. `data-daypart` no <html> troca só estas três propriedades;
+   * todo o resto do sistema herda. Valores vêm da paleta existente — nenhum
+   * hex novo entra no projeto por causa disso.
+   */
+  --dawn-from: var(--color-primary-400);
+  --dawn-to: var(--color-primary-500);
+  --dawn-intensity: 0.05;
+}
+
+:root[data-daypart='dawn'] {
+  --dawn-from: var(--color-accent-400);
+  --dawn-to: var(--color-accent-500);
+  --dawn-intensity: 0.08;
+}
+
+:root[data-daypart='day'] {
+  --dawn-from: var(--color-primary-300);
+  --dawn-to: var(--color-primary-500);
+  --dawn-intensity: 0.05;
+}
+
+:root[data-daypart='dusk'] {
+  --dawn-from: var(--color-accent-500);
+  --dawn-to: var(--color-primary-600);
+  --dawn-intensity: 0.07;
+}
+
+:root[data-daypart='night'] {
+  --dawn-from: var(--color-primary-700);
+  --dawn-to: var(--color-primary-800);
+  --dawn-intensity: 0.04;
 }
 
 :root[data-theme='dark'],
@@ -51,20 +163,42 @@
   @media (prefers-color-scheme: dark) {
     --color-bg: #0b0d14;
     --color-surface: #131521;
+    --color-surface-raised: #191c2b;
     --color-sidebar: #10121b;
     --color-border: #232637;
+    --color-hairline: rgba(255, 255, 255, 0.07);
     --color-text: #f2f3f8;
     --color-text-muted: #8a8fa8;
+    --surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    --grain-opacity: 0.035;
   }
 }
 
 :root[data-theme='dark'] {
   --color-bg: #0b0d14;
   --color-surface: #131521;
+  --color-surface-raised: #191c2b;
   --color-sidebar: #10121b;
   --color-border: #232637;
+  --color-hairline: rgba(255, 255, 255, 0.07);
   --color-text: #f2f3f8;
   --color-text-muted: #8a8fa8;
+  --surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --grain-opacity: 0.035;
+}
+
+/* No escuro a luz precisa ser mais presente pra não sumir no fundo. */
+:root[data-theme='dark'][data-daypart='dawn'],
+:root[data-theme='dark'][data-daypart='dusk'] {
+  --dawn-intensity: 0.12;
+}
+
+:root[data-theme='dark'][data-daypart='day'] {
+  --dawn-intensity: 0.09;
+}
+
+:root[data-theme='dark'][data-daypart='night'] {
+  --dawn-intensity: 0.1;
 }
 
 body {
@@ -73,6 +207,23 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text);
   color-scheme: light dark;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/*
+ * Grão. Fica na camada de fundo do body (não é overlay), então aparece só
+ * nas calhas entre os cards — que têm --color-surface opaco — e nunca cobre
+ * conteúdo nem custa repaint de GPU em scroll.
+ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 h1,
@@ -80,7 +231,19 @@ h2,
 h3,
 h4 {
   font-family: var(--font-heading);
-  letter-spacing: -0.02em;
+}
+
+/*
+ * Número-herói: a carga emocional de um app de acompanhamento está nos
+ * números (sequência, minutos, aproveitamento), e eles viviam em text-2xl.
+ * Tabular pra alinhar entre linhas, tracking fechado pra virar objeto visual.
+ */
+@utility numeric-display {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.035em;
+  line-height: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
